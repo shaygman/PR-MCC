@@ -1,0 +1,33 @@
+#include "defines.hpp"
+
+author = Shay_gman;
+overviewPicture = "PRloadingLogo.paa";
+overviewText = "Lets do some PR in ArmA.";
+onLoadName = Project Reality (MCC) - Pangaia;
+loadScreen = "PRloadingLogo.paa";
+onLoadMission =  Project Reality is a tactical advance and secure PvP match using MCC engine and a built in rank system and more;
+
+respawn      = "BASE";
+respawndelay = 5;
+disabledAI   = 1;
+enableDebugConsole = 1;
+saving = 0;
+
+//----- For PvP ---------
+disableChannels[]={0,1};
+joinUnassigned = 1;
+
+corpseLimit = 30;
+corpseRemovalMinTime = 60;
+corpseRemovalMaxTime = 300;
+
+wreckLimit = 15;
+wreckRemovalMinTime = 60;
+wreckRemovalMaxTime = 1200;
+
+class Header
+{
+	gameType =aas;
+	minPlayers = 1;
+	maxPlayers = 149;
+};
