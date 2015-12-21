@@ -76,31 +76,39 @@ if (!isDedicated && hasInterface) then {
 
 	//Disable inventory
 	player addEventHandler ["InventoryOpened", {true}];
-};
 
-/*
-MCC_fnc_AASmarkers = {
-	private ["_side","_attack","_attackText","_pos","_attackerSide"];
-	if (isDedicated || !hasInterface) exitWith {};
+	MCC_fnc_AASmarkers = {
+	private ["_logic","_owner","_triggers","_attack","_pos"];
+		_logic = _this;
+		_triggers = _logic getvariable ["areas",[]];
+		while {true} do {
+			_owner = _logic getvariable ["owner",sideunknown];
 
-	_pos = param [0,[0,0,0],[[]]];
-	_attackerSide = param [1,west,[west,missionNamespace]];
-	_attack = playerSide == _attackerSide;
+			if ({((triggerArea _x) select 0) > 0} count _triggers > 0 && _owner !=sideUnknown) then {
+				_attack = playerSide != _owner;
+				_pos = position (_triggers select 0);
 
-	_pos resize 2;
-	_side = playerSide;
+				_attackText = if (_attack) then {"Attack"} else {"Defend"};
+				_marker = missionNamespace getVariable [format ["MCC_AASmarker_%1",_attackText],""];
+				if (str getMarkerPos _marker == "[0,0,0]") then {
+					_marker = createMarkerLocal [format ["MCC_AASmarker_%1",_attackText], _pos];
+					_marker setMarkerText _attackText;
+					_marker setMarkerShapeLocal "ICON";
+					_marker setMarkerTypeLocal  "mil_marker";
+					_marker setMarkerColorLocal (if (_attack) then {"ColorRed"} else {"ColorBlue"});
+					missionNamespace setVariable [format ["MCC_AASmarker_%1",_attackText],_marker];
+				};
 
-	_attackText = if (_attack) then {"Attack"} else {"Defend"};
-	_marker = missionNamespace getVariable [format ["MCC_AASmarker_%1",_attackText],""];
-	if (str getMarkerPos _marker == "[0,0,0]") then {
-		_marker = createMarkerLocal [format ["MCC_AASmarker_%1",_attackText], _pos];
-		_marker setMarkerText _attackText;
-		_marker setMarkerShapeLocal "ICON";
-		_marker setMarkerTypeLocal  "mil_marker";
-		_marker setMarkerColorLocal (if (_attack) then {"ColorRed"} else {"ColorBlue"});
-		missionNamespace setVariable [format ["MCC_AASmarker_%1",_attackText],_marker];
+				_marker setMarkerPosLocal _pos;
+			};
+
+			sleep 1;
+		};
 	};
 
-	_marker setMarkerPosLocal _pos;
+	{
+		_x spawn MCC_fnc_AASmarkers;
+
+	} forEach [s1,s2,s3,s4,s5,s6];
+
 };
-*/
