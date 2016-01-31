@@ -31,9 +31,6 @@
 //----Logistics-----------------
 #include "mcc\Dialogs\mcc_logisticsLoadTruck.hpp"
 
-//----Interaction-----------------
-#include "mcc\Dialogs\mcc_interactionMenu.hpp"
-
 //----Key Settings-----------------
 #include "mcc\Dialogs\mcc_rscKeyBinds.hpp"
 
@@ -47,13 +44,7 @@
 #define CPPATH ""
 #define CPVersion "0.1"
 
-#include "configs\dialogs\cp_dialogs.hpp"
-#include "configs\dialogs\gearPanel\respawnPanel.hpp"
-#include "configs\dialogs\gearPanel\squadsPanel.hpp"
-#include "configs\dialogs\gearPanel\gearPanel.hpp"
-#include "configs\dialogs\gearPanel\weaponsPanel.hpp"
-#include "configs\dialogs\gearPanel\accessoriesPanel.hpp"
-#include "configs\dialogs\gearPanel\uniformPanel.hpp"
+#include "mcc\roleSelection\cfg.hpp"
 
 //--------------------------Campaign----------------------------------------------------
 #include "mcc\Dialogs\campaign\mcc_vehicleSpawner.hpp"
@@ -71,6 +62,7 @@
 #include "mcc\rts\cfg.hpp"
 #include "mcc\bombDefuse\cfg.hpp"
 #include "mcc\survive\cfg.hpp"
+#include "mcc\interaction\cfg.hpp"
 
 //--------------------------Cfg----------------------------------------------------
 class CfgFunctions
@@ -90,6 +82,9 @@ class CfgFunctions
 		#include "mcc\bombDefuse\cfgFunctions.hpp"
 		#include "mcc\survive\cfgFunctions.hpp"
 		#include "mcc\compassHUD\cfgFunctions.hpp"
+		#include "mcc\roleSelection\cfgFunctions.hpp"
+		#include "mcc\interaction\cfgFunctions.hpp"
+		#include "mcc\supression\cfgFunctions.hpp"
 	};
 };
 

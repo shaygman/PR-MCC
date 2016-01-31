@@ -19,9 +19,10 @@ missionNamespace setVariable ["MCC_initCompassHUD",true];
 _compassTeamMates = param [0,true,[true]];
 _compassTeamMates spawn {
     disableSerialization;
-    private ["_click","_dir","_pos","_wpPos","_index","_indexCounter","_orgDir","_iconPic","_iconColor","_iconSize"];
+    private ["_click","_dir","_pos","_wpPos","_index","_indexCounter","_orgDir","_iconPic","_iconColor","_iconSize","_ctrls","_units"];
     _click = 0.816 / 180;
     _indexCounter = 10;
+    _units = [];
     while {(missionNamespace getVariable ["MCC_initCompassHUD",false])} do {
         _orgDir = ([player, positionCameraToWorld [0,0,100]] call BIS_fnc_dirTo);
 
@@ -58,27 +59,30 @@ _compassTeamMates spawn {
                         _indexCounter = _indexCounter + 1;
                         (uiNamespace getVariable "MCC_hud_compass") ctrlCreate ["RscPicture", _indexCounter,((uiNamespace getVariable "MCC_hud_compass") displayCtrl 1)];
                         _x setVariable ["MCC_hud_compass_unitMarker",_indexCounter];
-                        _index = _x getVariable ["MCC_hud_compass_unitMarker",-1];
-
-                        //Get icon
-                        switch (true) do {
-                            case (_x == leader player): {
-                                _iconPic = "iconManLeader";
-                                _iconColor = [0.455,0,0,1];
-                            };
-                            case (((getNumber(configFile >> "CfgVehicles" >> typeOf _x >> "attendant")) == 1) || (toLower(_x getvariable ["CP_role",""]) == "corpsman")): {
-                                _iconPic = "iconManMedic";
-                                _iconColor = [0,0,0.455,1];
-                            };
-                            default {
-                                _iconPic = getText((configfile >> "CfgVehicles" >> typeof _x >> "icon"));
-                                _iconColor = [0,0.455,0,1];
-                            };
-                        };
-
-                        ((uiNamespace getVariable "MCC_hud_compass") displayCtrl _index) ctrlSetText (getText(configfile >> "CfgVehicleIcons">>_iconPic));
-                        ((uiNamespace getVariable "MCC_hud_compass") displayCtrl _index) ctrlSetTextColor _iconColor;
+                        _units pushBack [_indexCounter,_x];
                     };
+
+                    _index = _x getVariable ["MCC_hud_compass_unitMarker",-1];
+
+                    //Get icon
+                    switch (true) do {
+                        case (_x == leader player): {
+                            _iconPic = "iconManLeader";
+                            _iconColor = [0.455,0,0,1];
+                        };
+                        case (((getNumber(configFile >> "CfgVehicles" >> typeOf _x >> "attendant")) == 1) || (toLower(_x getvariable ["CP_role",""]) == "corpsman")): {
+                            _iconPic = "iconManMedic";
+                            _iconColor = [0,0,0.455,1];
+                        };
+                        default {
+                            _iconPic = getText((configfile >> "CfgVehicles" >> typeof _x >> "icon"));
+                            _iconColor = [0,0.455,0,1];
+                        };
+                    };
+
+                    ((uiNamespace getVariable "MCC_hud_compass") displayCtrl _index) ctrlSetText (getText(configfile >> "CfgVehicleIcons">>_iconPic));
+                    ((uiNamespace getVariable "MCC_hud_compass") displayCtrl _index) ctrlSetTextColor _iconColor;
+
 
                     _dir = _orgDir - ([positionCameraToWorld [0,0,0], position _x] call BIS_fnc_dirTo);
                     if (_dir < -180) then {_dir = _dir + 360;};
@@ -90,6 +94,15 @@ _compassTeamMates spawn {
                     ((uiNamespace getVariable "MCC_hud_compass") displayCtrl _index) ctrlCommit 0.05;
                 };
            } forEach (units player);
+
+           //Get rid of non available units
+           {
+                _unit = _x select 1;
+                if (!(_unit in units player) || isNull _unit) then {
+                    ((uiNamespace getVariable "MCC_hud_compass") displayCtrl (_x select 0)) ctrlShow false;
+                    ctrlDelete ((uiNamespace getVariable "MCC_hud_compass") displayCtrl (_x select 0));
+                };
+           } forEach _units;
         };
 
         sleep 0.05;

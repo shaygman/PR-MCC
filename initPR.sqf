@@ -39,7 +39,7 @@ missionNameSpace setVariable ["MCC_vonRadioKickIdleTime",15];
 enableEngineArtillery false;
 
 //Spawn UI
-_null = [1,true,true,true,true,true] spawn MCC_fnc_inGameUI;
+_null = [1,true,true,true,true,true,true] spawn MCC_fnc_inGameUI;
 
 if (isServer) then {
 	//Tickets
@@ -53,6 +53,50 @@ if (isServer) then {
 	publicVariable "MCC_resWest";
 	publicVariable "MCC_resEast";
 	publicVariable "MCC_resGUER";
+
+	//Random Weather
+	private ["_weather"];
+	_weather = (["Random","clear","cloudy","rain","storm","sandStorm","snow"]) select (["param_weather", 0] call BIS_fnc_getParamValue);
+
+	if (_weather == "Random") then {
+		_weather = [["clear","cloudy","rain","storm","sandStorm","snow"],[0.4,0.15,0.15,0.15,0.075,0.075]] call bis_fnc_selectRandomWeighted;
+	};
+
+	switch (_weather) do {
+	    case "clear": {
+	    	[[(random 0.2), (random 0.2), (random 0.2), 0, 0,(random 0.1),0]] spawn MCC_fnc_setWeather;
+	    };
+
+	    case "cloudy": {
+	    	[[0.4 + (random 0.2), 0.4 +(random 0.2), 0.4 +(random 0.2), 0.4 +(random 0.2), 0.4 +(random 0.2),0 +(random 0.2),0]] spawn MCC_fnc_setWeather;
+	    };
+
+	    case "rain": {
+	    	[[0.6 + (random 0.2), 0.6 +(random 0.2), 0.6 +(random 0.2), 0.6 +(random 0.2), 0.6 +(random 0.2),0.1 +(random 0.2),0]] spawn MCC_fnc_setWeather;
+	    };
+
+	    case "storm": {
+	    	[[0.8 + (random 0.2), 0.8 +(random 0.2), 0.8 +(random 0.2), 0.8 +(random 0.2), 0.8 +(random 0.2),0.3 +(random 0.2),0]] spawn MCC_fnc_setWeather;
+	    };
+
+	    case "sandStorm": {
+	    	[["sandstorm",false],"MCC_fnc_ppEffects",true,false] call BIS_fnc_MP;
+	    };
+
+	    case "snow": {
+	    	[["snow",false],"MCC_fnc_ppEffects",true,false] call BIS_fnc_MP;
+	    };
+	};
+
+	//Random Time
+	private ["_time"];
+	_time = ([-1,6,12,18,0]) select (["param_daytime", 0] call BIS_fnc_getParamValue);
+
+	if (_time < 0) then {
+		_time = [[6,12,18,0],[0.25,0.25,0.25,0.25]] call bis_fnc_selectRandomWeighted;
+	};
+
+	_time spawn BIS_fnc_paramDaytime;
 };
 
 if (!isDedicated && hasInterface) then {
@@ -108,7 +152,6 @@ if (!isDedicated && hasInterface) then {
 
 	{
 		_x spawn MCC_fnc_AASmarkers;
-
 	} forEach [s1,s2,s3,s4,s5,s6];
 
 };

@@ -31,3 +31,22 @@ class Header
 	minPlayers = 1;
 	maxPlayers = 149;
 };
+
+class Params
+{
+	class param_weather
+    {
+            title = "Weather";
+            texts[] = {"Random","clear","cloudy","rain","storm","sandStorm","snow"};
+            values[] = {0,1,2,3,4,5,6};
+            default = 0;
+    };
+
+	class param_daytime
+	{
+		title = "Time";
+		texts[] = {"Random","Morning","Day","Evening","Night"};
+		values[] = {0,1,2,3,4};
+		default = 0;
+	}
+};

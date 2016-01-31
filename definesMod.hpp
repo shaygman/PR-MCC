@@ -32,9 +32,6 @@
 //----Logistics-----------------
 #include "\mcc_sandbox_mod\mcc\Dialogs\mcc_logisticsLoadTruck.hpp"
 
-//----Interaction-----------------
-#include "\mcc_sandbox_mod\mcc\Dialogs\mcc_interactionMenu.hpp"
-
 //----Key Settings-----------------
 #include "\mcc_sandbox_mod\mcc\Dialogs\mcc_rscKeyBinds.hpp"
 
@@ -45,13 +42,7 @@
 #define CPPATH "\mcc_sandbox_mod\"
 #define CPVersion "0.1"
 
-#include "\mcc_sandbox_mod\configs\dialogs\cp_dialogs.hpp"
-#include "\mcc_sandbox_mod\configs\dialogs\gearPanel\respawnPanel.hpp"
-#include "\mcc_sandbox_mod\configs\dialogs\gearPanel\squadsPanel.hpp"
-#include "\mcc_sandbox_mod\configs\dialogs\gearPanel\gearPanel.hpp"
-#include "\mcc_sandbox_mod\configs\dialogs\gearPanel\weaponsPanel.hpp"
-#include "\mcc_sandbox_mod\configs\dialogs\gearPanel\accessoriesPanel.hpp"
-#include "\mcc_sandbox_mod\configs\dialogs\gearPanel\uniformPanel.hpp"
+#include "\mcc_sandbox_mod\mcc\roleSelection\cfg.hpp"
 
 //--------------------------Campaign----------------------------------------------------
 #include "\mcc_sandbox_mod\mcc\Dialogs\campaign\mcc_vehicleSpawner.hpp"
@@ -71,6 +62,7 @@
 #include "\mcc_sandbox_mod\mcc\rts\cfg.hpp"
 #include "\mcc_sandbox_mod\mcc\bombDefuse\cfg.hpp"
 #include "\mcc_sandbox_mod\mcc\survive\cfg.hpp"
+#include "\mcc_sandbox_mod\mcc\interaction\cfg.hpp"
 
 //--------------------------Cfg----------------------------------------------------
 class CfgFunctions
@@ -90,6 +82,9 @@ class CfgFunctions
 		#include "\mcc_sandbox_mod\mcc\bombDefuse\cfgFunctions.hpp"
 		#include "\mcc_sandbox_mod\mcc\survive\cfgFunctions.hpp"
 		#include "\mcc_sandbox_mod\mcc\compassHUD\cfgFunctions.hpp"
+		#include "\mcc_sandbox_mod\mcc\roleSelection\cfgFunctions.hpp"
+		#include "\mcc_sandbox_mod\mcc\interaction\cfgFunctions.hpp"
+		#include "\mcc_sandbox_mod\mcc\supression\cfgFunctions.hpp"
 	};
 };
 

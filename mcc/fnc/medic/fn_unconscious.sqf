@@ -2,7 +2,7 @@
 //Handle unconscious behavior
 //=============================================================================================================================================================================
 
-private ["_unit","_source","_string","_ypos"];
+private ["_unit","_source","_string","_ypos","_distance","_xpFactor"];
 _unit 	= _this select 0;
 _source	= _this select 1;
 
@@ -30,9 +30,20 @@ if (isplayer _source && _source != _unit) then {
 		};
 	} else {
 		//GetXP
-		if (CP_activated) then {
-			_string = if (missionNamespace getVariable ["MCC_medicXPmesseges",false]) then {format ["For killing %1",name _unit]} else {""};
-			[[getplayeruid _source, 500,_string], "MCC_fnc_addRating", side _source] spawn BIS_fnc_MP;
+		if (missionNamespace getVariable ["CP_activated",true]) then {
+
+			if (missionNamespace getVariable ["MCC_medicXPmesseges",true]) then {
+				_distance =floor (_source distance _unit);
+				_string = format ["Incapacitating %1 (Distance %2m)",name _unit, _distance];
+				_xpFactor = if (vehicle player != player) then {0.5} else {(ceil(_distance/200) min 3)};
+
+			} else {
+				_string = "";
+			};
+
+			if (side _source getFriend side _unit < 0.6) then {
+				[[getplayeruid _source, (100*_xpFactor),_string], "MCC_fnc_addRating", _source] spawn BIS_fnc_MP;
+			};
 		};
 
 	};
