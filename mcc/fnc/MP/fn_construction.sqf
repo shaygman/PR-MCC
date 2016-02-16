@@ -70,7 +70,7 @@ if (_conType in ["bunker","wall"]) then {
 	_const setVariable ["MCC_CONST_FORT",true, true];
 } else {
 	_bagFence = [
-					[_vehicleType,[0,0,0.0237527],0.216771,1,0,{},true],
+					[_vehicleType,[0,0,0.0237527],0.216771,1,0,"_this disableTIEquipment true;",true],
 					["Land_BagFence_Long_F",[1.55859,-0.130859,-0.00100017],269.77,1,0,{}],
 					["Land_BagFence_Long_F",[-2.00781,-0.216797,-0.00100017],269.77,1,0,{}],
 					["Land_BagFence_Corner_F",[1.49609,-2.53125,-0.000999928],92.2384,1,0,{}],

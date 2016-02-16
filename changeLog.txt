@@ -1,0 +1,2 @@
+TODO - change UI helper
+TODO - Amount of players from each side

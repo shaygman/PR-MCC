@@ -6,7 +6,7 @@ private ["_string","_logicPos","_logicEmpty","_nearObjects","_target","_nvgstate
 //******************************************************************************************************************************
 
 waituntil {alive player};
-cutText ["","BLACK",0];
+cutText ["","BLACK IN",5];
 player setVariable ["cpReady",false,true];
 
 //Disable weapon disassemble

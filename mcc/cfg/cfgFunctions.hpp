@@ -357,7 +357,7 @@ class evac
 	class evacSpawn {description = "Spawn a vehicle with crew and gunners, mark it as an evac vehicle";};
 	class repairEvac {description = "Repair evac helicopter";};
 	class setEvac {description = "Sets an empty ot AI vehicle into an ecav for a specific side";};
-	class fastRopeLocal {description = "handles fast rope on clients"};
+	class fastRopeLocal {description = "handles fast rope on clients";};
 };
 
 class ambient

@@ -5,8 +5,6 @@ MCC_isCBA = isClass (configFile >> "CfgPatches" >> "cba_main");
 MCC_initDone = false;
 MCC_GUI1initDone = false;
 
-cutText ["","BLACK IN",5];
-
 //Debug
 CP_debug = false;
 MW_debug = false;
@@ -913,14 +911,13 @@ MCC_groupGenGroupStatus = [west,east,resistance,civilian];
 if (isPlayer player && !isServer && !(MCC_isLocalHC) && (missionNameSpace getVariable ["MCC_syncOn",true])) then {
 	private ["_html","_loop"];
 	waituntil {!(IsNull (findDisplay 46))};
-	sleep 2;
 	waituntil {! isnil "MCC_fnc_countDownLine"};
 	mcc_sync_status = false;
 	[] spawn MCC_fnc_sync;
 	_loop = 20;
 
-	for [{_x=1},{_x<=_loop},{_x=_x+1}]  do //Create progress bar
-	{
+	//Create progress bar
+	for [{_x=1},{_x<=_loop},{_x=_x+1}]  do {
 		_footer = [_x,_loop] call MCC_fnc_countDownLine;
 		//add header
 		_html = "<t color='#818960' size='1.2' shadow='0' align='left' underline='true'>" + "Synchronizing with server" + "</t><br/><br/>";
@@ -932,8 +929,9 @@ if (isPlayer player && !isServer && !(MCC_isLocalHC) && (missionNameSpace getVar
 		_html = _html + "<br/><br/><t color='#818960' size='0.85' shadow='0' align='right'>" + _footer + "</t>";
 		hintsilent parseText(_html);
 		sleep 0.1;
-		if (!mcc_sync_status) then {sleep 3};
+		if (!mcc_sync_status) then {sleep 1};
 	};
+
 	Hint "Synchronizing Done";
 };
 
