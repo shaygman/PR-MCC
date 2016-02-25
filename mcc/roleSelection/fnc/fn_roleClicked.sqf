@@ -1,7 +1,7 @@
 //==================================================================MCC_fnc_roleClicked =================================================================================
 // Handle clicking on a role
-//==============================================================================================================================================================================
-private ["_role","_level","_array"];
+//=====================================================================================================================================================================
+private ["_role","_level","_array","_ctrl"];
 disableSerialization;
 _role = param [1,"",[""]];
 _parentIdc = param [2,0,[0]];
@@ -62,6 +62,17 @@ MCC_fnc_RSbuildGearButtons = {
 	_buttonCtrlGroup = _disp ctrlCreate ["RscControlsGroupNoScrollbars",_idc];
 	_buttonCtrlGroup ctrlSetPosition _ctrlPos;
 	_buttonCtrlGroup ctrlCommit 0;
+
+	//Create Gear background
+	if (isNull (_disp displayCtrl 9874444)) then {
+		_ctrlPos set [0,(_ctrlPos select 0) + 0.005 * safezoneW];
+		_ctrlPos set [1,0.42 * safezoneH];
+		_ctrlPos set [2,0.3 * safezoneW];
+		_ctrlPos set [3,0.2 * safezoneH];
+		_ctrl = _disp ctrlCreate ["RscListbox",9874444];
+		_ctrl ctrlSetPosition _ctrlPos;
+		_ctrl ctrlCommit 0;
+	};
 
 	{
 		_data = _x select 0;

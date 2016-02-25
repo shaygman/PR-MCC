@@ -72,7 +72,7 @@ _currentWeapon = missionNamespace getVariable format ["CP_player%1_items3_%2_%3"
 if (!isnil "_currentWeapon") then {[_currentWeapon] call MCC_fnc_addItem};
 
 //Insigna
-_currentWeapon = missionNamespace getVariable format ["CP_player%1Insigna_%2_%3",_role, getplayerUID player, side player];
+_currentWeapon = missionNamespace getVariable [format ["CP_player%1Insigna_%2_%3",_role, getplayerUID player, side player],nil];
 if (!isnil "_currentWeapon") then {[player, _currentWeapon] call BIS_fnc_setUnitInsignia};
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Add Primary attachments

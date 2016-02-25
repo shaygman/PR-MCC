@@ -170,7 +170,7 @@ if (isnil "CP_currentGeneralItems") then {
 //Set Inigna
 CP_currentInsigna = missionNamespace getVariable format ["CP_player%1Insigna_%2_%3",_role,getplayerUID player,side player];
 if (isnil "CP_currentInsigna") then {
-	missionNamespace setVariable [format["CP_player%1Insigna_%2_%3",_role,getplayerUID player,side player], CP_currentInsignas select 0];
+	missionNamespace setVariable [format["CP_player%1Insigna_%2_%3",_role,getplayerUID player,side player], (CP_currentInsignas select 0) select 1];
 	CP_currentInsigna = missionNamespace getVariable format ["CP_player%1Insigna_%2_%3",_role,getplayerUID player,side player];
 };
 
@@ -195,7 +195,55 @@ if (isnil "CP_playerUniforms") then {
 	};
 [_role] call MCC_fnc_assignGear;
 
-private ["_disp"];
+private ["_disp","_magTypes","_cfg","_displayname","_pic","_index","_ctrl","_mag"];
 _disp = uiNamespace getVariable "CP_GEARPANEL_IDD";
 if (isnil "_disp") exitWith {};
 [_disp] call MCC_fnc_playerStats;
+
+//Magazines and cargo UI
+if !(isNull (_disp displayCtrl 9874444)) then {
+	_ctrl = (_disp displayCtrl 9874444);
+	_magTypes = [];
+
+	{
+		if !(_x in _magTypes) then {_magTypes pushBack _x};
+	} forEach (items player + magazines player);
+
+	lbClear _ctrl;
+	{
+		_mag = _x;
+
+		_cfg = switch true do {
+			    case (isclass(configfile >> "CfgMagazines" >> _mag)): {
+			    	(configfile >> "CfgMagazines" >> _mag);
+			    };
+
+			    case (isclass(configfile >> "CfgWeapons" >> _mag)): {
+			    	(configfile >> "CfgWeapons" >> _mag);
+			    };
+
+			    case (isclass(configfile >> "CfgGlasses" >> _mag)): {
+			    	(configfile >> "CfgGlasses" >> _mag);
+			    };
+
+			    case (isclass(configfile >> "CfgVehicles" >> _mag)): {
+			    	(configfile >> "CfgVehicles" >> _mag);
+			    };
+
+			    case (isclass(missionconfigfile >> "CfgUnitInsignia" >> _mag)): {
+			    	(missionconfigfile >> "CfgUnitInsignia" >> _mag);
+			    };
+
+			    default {(configfile >> "CfgWeapons">> "")};
+			};
+
+		_displayname = getText(_cfg >> "displayName");
+		_displayname = str({_x == _mag} count (items player + magazines player))  + " X " + _displayname;
+
+		_pic = getText(_cfg >> "picture");
+
+		//For insignas
+		if (_pic == "") then {_pic =  getText(_cfg >> "texture")};
+		_ctrl lbSetPicture [_index, _pic];
+	} forEach _magTypes;
+};
