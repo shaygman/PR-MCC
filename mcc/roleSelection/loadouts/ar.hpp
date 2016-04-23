@@ -2,11 +2,16 @@ class ar : rifleman
 {
 	name    = "Automatic Rifleman";
 	picture =  __EVAL(MCCPATH +"mcc\roleSelection\data\AR.paa");
-	minPlayersForKit = 3;
+	minPlayersForKit = 2;
 	maxKitsInGroup = 2;
 	maxKitsInSide = 999;
+	allowMg = 1;
+	allowAT = 0;
+	allowSniper = 0;
+	allowPilot = 0;
+	allowCrew = 0;
 
-	class west
+	class west : west
 	{
 		class primary
 		{
@@ -131,7 +136,7 @@ class ar : rifleman
 		insigna[]= {{0,""},{0,"111thID"},{0,"BI"},{0,"Curator"},{0,"MANW"}};
 	};
 
-	class east
+	class east : east
 	{
 		class primary
 		{
@@ -256,7 +261,7 @@ class ar : rifleman
 		insigna[]= {{0,""},{0,"GryffinRegiment"},{0,"BI"},{0,"Curator"},{0,"MANW"}};
 	};
 
-	class guer
+	class guer : guer
 	{
 		class primary
 		{

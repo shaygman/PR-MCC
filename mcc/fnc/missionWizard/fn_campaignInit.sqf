@@ -49,7 +49,7 @@ waituntil {_check};
 //Search the map for locations
 private ["_worldPath","_mapSize","_mapCenter"];
 
-if (isnil "hsim_worldArea") then
+if (isnil "MCC_worldArea") then
 {
 	_worldPath = configfile >> "cfgworlds" >> worldname;
 	_mapSize = getnumber (_worldPath >> "mapSize");
@@ -58,8 +58,8 @@ if (isnil "hsim_worldArea") then
 	_mapSize = _mapSize / 2;
 	_mapCenter = [_mapSize,_mapSize];
 
-	hsim_worldArea = createtrigger ["emptydetector",_mapCenter];
-	hsim_worldArea settriggerarea [_mapSize,_mapSize,0,true];
+	MCC_worldArea = createtrigger ["emptydetector",_mapCenter];
+	MCC_worldArea settriggerarea [_mapSize,_mapSize,0,true];
 };
 
 //Build Locations
@@ -74,11 +74,17 @@ _locations = [];
 
 //If no user defined locations lets find map locations.
 if (count _locations == 0) then {
-	_pos = getpos hsim_worldArea;
+	_pos = getpos MCC_worldArea;
 	{
 		_temploc = [_pos,15000,_x] call MCC_fnc_MWbuildLocations;
 		{
-			_locations pushBack [getpos (_x select 0), _x select 1];
+			if (((missionNamespace getVariable ["MCC_START_WEST",[0,0,0]]) distance (getpos (_x select 0)) >700) &&
+				((missionNamespace getVariable ["MCC_START_EAST",[0,0,0]]) distance (getpos (_x select 0)) >700) &&
+				((missionNamespace getVariable ["MCC_START_GUER",[0,0,0]]) distance (getpos (_x select 0)) >700)) then {
+
+				_locations pushBack [getpos (_x select 0), _x select 1];
+			};
+
 		} forEach _temploc;
 	} forEach ["city","mil","nature"]; //,"mil","hill","nature","marine"
 };
@@ -86,7 +92,7 @@ if (count _locations == 0) then {
 //Still no location go bruth force
 if (count _locations == 0) then {
 	for "_i" from 1 to 100  do {
-		_temploc = [[getpos hsim_worldArea, hsim_worldArea], "ground", ["water","out"],{}] call BIS_fnc_randomPos;
+		_temploc = [[getpos MCC_worldArea, MCC_worldArea], "ground", ["water","out"],{}] call BIS_fnc_randomPos;
 		_locations pushBack [_temploc, ""];
 	};
 };
@@ -166,7 +172,7 @@ while {count _locations > 0 && _missionDone <= _missionMax} do {
 	_isAS = random 1 > 0.6;
 	_isSB = random 1 > 0.8;
 	_reinforcement =if (random 100 < (_difficulty)*2) then {[1,1,1,1,2] call BIS_fnc_selectRandom} else {0};
-	_obj1 = if (random 1 > 0.5) then {["Clear Area","Secure HVT","Kill HVT","Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Aquire Intel"] call BIS_fnc_selectRandom} else {"Clear Area"};
+	_obj1 = if (random 1 > 0.2) then {["Clear Area","Secure HVT","Kill HVT","Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Aquire Intel"] call BIS_fnc_selectRandom} else {"Clear Area"};
 
 	_obj2 = if (random 100 < _difficulty) then {"Destroy Radar/Radio"} else {"None"};
 	_obj3 = if (random 100 < _difficulty) then {["Secure HVT","Kill HVT","Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Aquire Intel","Disarm IED"] call BIS_fnc_selectRandom} else {"None"};
@@ -274,6 +280,8 @@ while {count _locations > 0 && _missionDone <= _missionMax} do {
 		    default {"ColorGUER"};
 		};
 	[1, _markerColor,[_AOSize*2,_AOSize*2], "RECTANGLE", "Solid", "Empty", _markerName, _AOlocationPos] call MCC_fnc_makeMarker;
+
+	_missionDone = _missionDone + 1;
 };
 
 //Mission won outro

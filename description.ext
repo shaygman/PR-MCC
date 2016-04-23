@@ -29,7 +29,7 @@ class Header
 {
 	gameType =aas;
 	minPlayers = 1;
-	maxPlayers = 149;
+	maxPlayers = 60;
 };
 
 class Params
