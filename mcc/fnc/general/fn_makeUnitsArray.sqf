@@ -34,7 +34,9 @@ for "_i" from 1 to (count _CfgVehicles - 1) do
 		{
 			if (toLower(_simulation) == _simTypesUnits && !(gettext(_CfgVehicle >> "DLC") in ["Kart"])) then {
 					if ((toLower(_vehicleClass) == _classType) || (_classType == "")) then {
-							if !(["vr",tolower _vehicleClass] call bis_fnc_inString) then {
+							if (!(["vr",tolower _vehicleClass] call bis_fnc_inString) && //no karts
+								(count getArray(_CfgVehicle >> "weapons")>2)	//no unarmed
+								) then {
 								_unitsArray set[_idx,[_cfgclass,_vehicleDisplayName]];
 								_idx = _idx + 1;
 							};

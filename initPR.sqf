@@ -28,181 +28,35 @@ missionNameSpace setVariable ["MCC_medicXPmesseges",true];
 missionNameSpace setVariable ["MCC_medicPunishTK",true];
 
 //Radio
-missionNameSpace setVariable ["MCC_VonRadio",true];
-missionNameSpace setVariable ["MCC_vonRadioDistanceGlobal",200000];
-missionNameSpace setVariable ["MCC_vonRadioDistanceSide",10000];
-missionNameSpace setVariable ["MCC_vonRadioDistanceCommander",10000];
-missionNameSpace setVariable ["MCC_vonRadioDistanceGroup",1000];
-missionNameSpace setVariable ["MCC_vonRadioKickIdle",true];
-missionNameSpace setVariable ["MCC_vonRadioKickIdleTime",15];
+if ((paramsArray select 2) ==1) then {
+	missionNameSpace setVariable ["MCC_VonRadio",true];
+	missionNameSpace setVariable ["MCC_vonRadioDistanceGlobal",200000];
+	missionNameSpace setVariable ["MCC_vonRadioDistanceSide",10000];
+	missionNameSpace setVariable ["MCC_vonRadioDistanceCommander",10000];
+	missionNameSpace setVariable ["MCC_vonRadioDistanceGroup",1000];
+	missionNameSpace setVariable ["MCC_vonRadioKickIdle",true];
+	missionNameSpace setVariable ["MCC_vonRadioKickIdleTime",15];
+} else {
+	missionNameSpace setVariable ["MCC_VonRadio",false];
+};
 
+//artillery
 enableEngineArtillery false;
+HW_arti_types = [["HE Laser-guided","Bo_GBU12_LGB",3,50],["HE 82mm","Sh_82mm_AMOS",1,75]];
 
 //Spawn UI
 _null = [1,true,true,true,true,true,true] spawn MCC_fnc_inGameUI;
 
-MCC_fnc_AAS_drawLine = {
-	private ["_dist","_dir","_center"];
-	params ["_start","_end","_lineMarkerName"];
-
-	_dist = _start distance _end;
-	_dir = ((_end select 0) - (_start select 0)) atan2
-	((_end select 1) - (_start select 1));
-
-	_center = [(_start select 0) + ((sin _dir) * _dist / 2),
-	(_start select 1) + ((cos _dir) * _dist / 2)];
-
-	createMarkerLocal [_lineMarkerName, _center];
-	_lineMarkerName setMarkerShapeLocal "RECTANGLE";
-	_lineMarkerName setMarkerSizeLocal [10, _dist / 2];
-	_lineMarkerName setMarkerColorLocal "ColorBlack";
-	_lineMarkerName setMarkerDirLocal _dir;
-};
-
-MCC_fnc_AAS = {
-	private ["_sectors","_zoneTriggers","_triggersAreas","_trigger","_fnc_drawLine","_sides"];
-
-	MCC_fnc_AASHandleSector = {
-		private ["_owner","_owners","_index","_sides","_factor","_nextTriggerIndex","_lastTriggerIndex","_triggers","_nextTriggerOwner"];
-		params ["_sector"];
-
-		_owner = _sector getvariable ["owner",sideunknown];
-		_index = (missionNamespace getVariable ["MCC_fnc_AAS_sectors",[]]) find _sector;
-
-		waitUntil {_owner != (_sector getvariable ["owner",sideunknown]);};
-		_owner = _sector getvariable ["owner",sideunknown];
-
-		_owners = missionNamespace getVariable ["MCC_fnc_AAS_owners",[]];
-		_owners set [_index,_owner];
-		missionNamespace setVariable ["MCC_fnc_AAS_owners",_owners];
-		publicVariable "MCC_fnc_AAS_owners";
-
-		_sides = missionNamespace getVariable ["MCC_fnc_AAS_sides",[]];
-
-		//We have a valid conquestor
-		if (_owner in _sides) then {
-
-			_triggers = missionNamespace getVariable ["MCC_fnc_AAS_triggers",[]];
-			_triggersAreas = missionNamespace getVariable ["MCC_fnc_AAS_triggersAreas",[]];
-
-			//open new sector and close this one
-			_nextTriggerIndex = if (_owner == (_sides select 0)) then {_index + 1} else {_index -1};
-			_lastTriggerIndex = if (_owner == (_sides select 0)) then {_index - 1} else {_index +1};
-
-			// Marker defend current sector
-			deleteMarker (missionNamespace getVariable [format ["sector_%1", _index],""]);
-			[[_owner, position (_triggers select _index),format ["sector_%1", _index]] ,"MCC_fnc_AASmarkers", true,false] spawn BIS_fnc_MP;
-
-			if (_nextTriggerIndex >= 0 && _nextTriggerIndex < (count _triggers)) then {
-				(_triggers select _nextTriggerIndex) setTriggerArea (_triggersAreas select _nextTriggerIndex);
-
-				// Marker
-				_nextTriggerOwner = ((missionNamespace getVariable ["MCC_fnc_AAS_sectors",[]]) select _nextTriggerIndex) getVariable ["owner",sideunknown];
-				[[_nextTriggerOwner, position (_triggers select _nextTriggerIndex),format ["sector_%1", _nextTriggerIndex]] ,"MCC_fnc_AASmarkers", true,false] spawn BIS_fnc_MP;
-			};
-
-			if (_lastTriggerIndex >= 0 && _lastTriggerIndex < (count _triggers)) then {
-				(_triggers select _lastTriggerIndex) setTriggerArea [0,0,0,false];
-				deleteMarker (missionNamespace getVariable [format ["sector_%1", _lastTriggerIndex],""]);
-			};
-		};
-
-		_sector spawn MCC_fnc_AASHandleSector;
-	};
-
-	//Module or function call
-	if (typeName _this == typeName []) then {
-		_sectors =  _this select 0;
-		_sides = _this select 1;
-	} else {
-		_sectors = synchronizedObjects _this;
-		_sides = [];
-		{
-			_sides pushBack ([(_this getVariable [_x,1])] call BIS_fnc_sideType);
-		} forEach ["side1","side2"];
-	};
-
-	//Init
-	_triggers = [];
-	_triggersAreas = [];
-	_owners = [];
-
-	{
-		_zoneTriggers = _x getvariable ["areas",[]];
-		if (count _zoneTriggers == 0) exitWith {diag_log format ["MCC_fnc_AAS Error: no trigger in sector %1", _foreachindex]};
-		_trigger = _zoneTriggers select 0;
-		_triggers pushBack _trigger;
-		_triggersAreas pushBack (triggerArea _trigger);
-		_owners pushBack (_x getvariable ["owner",sideunknown]);
-		_trigger setTriggerArea [0,0,0,false];
-	} forEach _sectors;
-
-	missionNamespace setVariable ["MCC_fnc_AAS_sides",_sides];
-	publicVariable "MCC_fnc_AAS_sides";
-
-	missionNamespace setVariable ["MCC_fnc_AAS_sectors",_sectors];
-	publicVariable "MCC_fnc_AAS_sectors";
-
-	missionNamespace setVariable ["MCC_fnc_AAS_triggers",_triggers];
-	publicVariable "MCC_fnc_AAS_triggers";
-
-	missionNamespace setVariable ["MCC_fnc_AAS_triggersAreas",_triggersAreas];
-	publicVariable "MCC_fnc_AAS_triggersAreas";
-
-	missionNamespace setVariable ["MCC_fnc_AAS_owners",_owners];
-	publicVariable "MCC_fnc_AAS_owners";
-
-
-	//Set the first and last areas open for conquest
-	{
-		_trigger = _triggers select _x;
-		_trigger setTriggerArea (_triggersAreas select _x);
-
-		//Set Markers
-		[[_owners select _x, position _trigger,format ["sector_%1", _x]] ,"MCC_fnc_AASmarkers", true,false] spawn BIS_fnc_MP;
-
-	} forEach [0,(count _triggers -1)];
-
-	//Draw Lines
-	{
-		if (_foreachindex > 0) then {
-			[[position _x, position (_triggers select (_foreachindex -1)), format ["MCC_AAS_Line_%1", _foreachindex]] ,"MCC_fnc_AAS_drawLine", true,true] spawn BIS_fnc_MP;
-		};
-	} forEach _triggers;
-
-	//Main loop
-	{
-		_x spawn MCC_fnc_AASHandleSector;
-	} forEach _sectors;
-};
-
-MCC_fnc_AASmarkers = {
-	private ["_logic","_triggers","_attack","_marker","_attackText"];
-	params ["_owner","_pos","_markerName"];
-
-	_pos =  [_pos, 20, 0] call BIS_fnc_relPos;
-	_attack = playerSide != _owner;
-	_attackText = if (_attack) then {"Attack"} else {"Defend"};
-	_marker = missionNamespace getVariable [_markerName,""];
-
-	if (str getMarkerPos _marker == "[0,0,0]") then {
-		_marker = createMarkerLocal [format ["%1_%2",_markerName,_attackText], _pos];
-		_marker setMarkerTextLocal _attackText;
-		_marker setMarkerShapeLocal "ICON";
-		_marker setMarkerTypeLocal  "mil_marker";
-		_marker setMarkerColorLocal (if (_attack) then {"ColorRed"} else {"ColorBlue"});
-		missionNamespace setVariable [_markerName,_marker];
-	};
-
-	_marker setMarkerPosLocal _pos;
-};
-
 if (isServer || isDedicated) then {
 	0 spawn {
+		private ["_side1","_side2"];
+		_side1 = west;
+		_side2 = east;
+
 		waitUntil {time > 0};
 		//Tickets
-		[west, 200] call BIS_fnc_respawnTickets;
-		[east, 200] call BIS_fnc_respawnTickets;
+		[_side1, 200] call BIS_fnc_respawnTickets;
+		[_side2, 200] call BIS_fnc_respawnTickets;
 
 		//Resources
 		missionNamespace setVariable ["MCC_resWest",[5000,5000,5000,200,200]];
@@ -254,9 +108,34 @@ if (isServer || isDedicated) then {
 			_time = [[6,12,18,0],[0.25,0.25,0.25,0.25]] call bis_fnc_selectRandomWeighted;
 		};
 
-		[[s1,s2,s3,s4,s5,s6],[west,east]] call MCC_fnc_AAS;
+		[[s1,s2,s3,s4,s5,s6],[_side1,_side2]] call MCC_fnc_aasInit;
 
 		_time spawn BIS_fnc_paramDaytime;
+
+
+		//Start AI behavior
+		switch (paramsArray select 3) do {
+			//east
+		    case 1: {
+		    	[_side2] spawn MCC_fnc_aas_AIControl;
+		    	[_side2, _side1, true, 20, true, "OPF_F",300,[["rifleman","ar","at","corpsman","marksman","officer"],[0.8,0.15,0.15,0.2,0.05,0.2]], [19151.4,13270.9,1.25173]] spawn MCC_fnc_aas_AIspawn;
+		    };
+
+		    //west
+		    case 2: {
+		    	[_side1] spawn MCC_fnc_aas_AIControl;
+		    	[_side1, _side2, true, 20, true, "BLU_F",300,[["officer","rifleman","ar","at","corpsman","marksman"],[0.8,0.15,0.15,0.2,0.05,0.2]], [20803.1,7255.39,0]] spawn MCC_fnc_aas_AIspawn;
+		    };
+
+		    //both
+		    case 2: {
+		    	{[_x] spawn MCC_fnc_aas_AIControl} foreach [_side1,_side2];
+
+				//Start AI spawn
+				[_side1, _side2, true, 20, true, "BLU_F",300,[["officer","rifleman","ar","at","corpsman","marksman"],[0.8,0.15,0.15,0.2,0.05,0.2]], [20803.1,7255.39,0]] spawn MCC_fnc_aas_AIspawn;
+				[_side2, _side1, true, 20, true, "OPF_F",300,[["rifleman","ar","at","corpsman","marksman","officer"],[0.8,0.15,0.15,0.2,0.05,0.2]], [19151.4,13270.9,1.25173]] spawn MCC_fnc_aas_AIspawn;
+		    };
+		};
 	};
 };
 
@@ -287,6 +166,40 @@ if (!isDedicated && hasInterface) then {
 	//Tutorials
 	waituntil {player getVariable ["cpReady",false]};
 
+	//Commander
+	0 spawn {
+		waituntil {((MCC_server getVariable [format ["CP_commander%1",side player],""]) == getPlayerUID player)};
+		if (profileNamespace getVariable ["MCC_PRtutorialCommander",true]) then {
+			_answer = ["<img size='10' img image='commanderRTS.paa' align='center'/>
+						<br/>Open the commander console using your <t color='#FF6A32'>self interaction keys</t> or use the shortcut buttons as defined in the settings.
+						<br/>From the console you can <t color='#FF6A32'>order players and AI group</t> by selecting them and double clicking on the map.
+						<br/>You can call <t color='#FF6A32'>EVAC CAS and Supply drops</t> using the <t color='#FF6A32'> F2 and F3 buttons</t>.
+						<br/>Order <t color='#FF6A32'>artillery</t> using the <t color='#FF6A32'>F4</t> button.
+						<br/><br/>Do you want to disable this message in the future?","Commander Role","Yes","No"] call BIS_fnc_guiMessage;
+
+			waituntil {!isnil "_answer" && !dialog};
+
+			profileNamespace setVariable ["MCC_PRtutorialCommander",!_answer];
+		};
+	};
+
+	//Squad Leader
+	0 spawn {
+		waituntil {leader player == player && count units group player > 1};
+		if (profileNamespace getVariable ["MCC_FCtutorialSQL",true]) then {
+			_answer = ["<img size='10' img image='sqlPic.paa' align='center'/>
+						<br/>As the Squad Leader you will have more option in the <t color='#FF6A32'>self interaction menu</t>.
+						<br/>You'll be able to place <t color='#FF6A32'>support markers</t> or <t color='#FF6A32'>spot enemies</t> by marking them on the map for 5 minutes.
+						<br/>The <t color='#FF6A32'>Squad Leader PDA</t> can be used to constantly show friendly player on the HUD and increase battlefield awarness.
+						<br/>You can also order the <t color='#FF6A32'>construction of battlefield emplacements</t> such as F.O.B which serves as spawn points.
+						<br/><br/>Do you want to disable this message in the future?","Squad Leader Role","Yes","No"] call BIS_fnc_guiMessage;
+
+			waituntil {!isnil "_answer" && !dialog};
+
+			profileNamespace setVariable ["MCC_FCtutorialSQL",!_answer];
+		};
+	};
+
 	if (profileNamespace getVariable ["MCC_PRtutorialPRKeys",true]) then {
 		_answer = ["<img size='8.7' img image='PRkeyboardLayout.paa' />
 					<br/>Press <t color='#FF6A32'>Interact</t> button to interact with objects or units (medic other, changing kits, vehicles options, logistics exc).
@@ -301,7 +214,7 @@ if (!isDedicated && hasInterface) then {
 
 	if (profileNamespace getVariable ["MCC_PRtutorialPR",true]) then {
 		_answer = ["<img size='10' img image='PRmap.paa' align='center'/>
-					<br/>This is Advance and Secure (AAS) mission where two sides are fighting to capture the islan.
+					<br/>This is Advance and Secure (AAS) mission where two sides are fighting to capture the island.
 					<br/>Each side will have a commander and limited resources to help him capture the island.
 					<br/>The capture points can only be captured in a specific order and the mission will end once all one side tickets reached zero or the mission time runs out.
 					<br />Squad commanders can build FOB and other players can use the trucks utilize logistics to build the FOB or other battlefield emplacements
@@ -313,20 +226,39 @@ if (!isDedicated && hasInterface) then {
 		profileNamespace setVariable ["MCC_PRtutorialPR",!_answer];
 	};
 
-	if (profileNamespace getVariable ["MCC_PRtutorialLogistics",true]) then {
-		waituntil {typeof vehicle player in (missionNamespace getvariable ["MCC_supplyTracks",[]])};
-		_answer = ["<img size='9' img image='PRlogistics.paa' align='center'/>
-					<br />While inside this vehicle and within 50 meters from HQ you can load logistics crates from the HQ and delieve them to the front.
-					<br/><br/>Ammo crates will resupply units and vehicles.
-					<br/>Supply crates will repair damaged vehicles and will be used to build FOB and battle emplacements.
-					<br/>Fuel crates will refuel vehicles.
-					<br/><br/>Press <t color='#FF6A32'>Interact</t> button to open the logistics dialog while sitting in the driving seat and not accelerating.
-					<br/><br/>Do you want to disable this message in the future?","Logistics","Yes","No"] call BIS_fnc_guiMessage;
+	//Logistics Trucks
+	0 spawn {
+		if (profileNamespace getVariable ["MCC_PRtutorialLogistics",true]) then {
+			waituntil {typeof vehicle player in (missionNamespace getvariable ["MCC_supplyTracks",[]]) && !dialog};
+			_answer = ["<img size='9' img image='PRlogistics.paa' align='center'/>
+						<br />While inside this vehicle and within 50 meters from HQ you can load logistics crates from the HQ and delieve them to the front.
+						<br/><br/><t color='#FF6A32'>Ammo crates</t> will resupply units and vehicles.
+						<br/><t color='#FF6A32'>Supply crates</t> will repair damaged vehicles and will be used to build FOB and battle emplacements.
+						<br/><t color='#FF6A32'>Fuel crates</t> will refuel vehicles.
+						<br/><br/>Press <t color='#FF6A32'>Interact</t> button to open the logistics dialog while in the driving seat and stopping next to the HQ.
+						<br/><br/>Do you want to disable this message in the future?","Logistics","Yes","No"] call BIS_fnc_guiMessage;
 
-		waituntil {!isnil "_answer"};
+			waituntil {!isnil "_answer" && !dialog};
 
-		profileNamespace setVariable ["MCC_PRtutorialLogistics",!_answer];
+			profileNamespace setVariable ["MCC_PRtutorialLogistics",!_answer];
+		};
 	};
 
-	//MCC_supplyTracks
+	//Logistics Helicopters
+	0 spawn {
+		if (profileNamespace getVariable ["MCC_PRtutorialLogisticsHeli",true]) then {
+			waituntil {(vehicle player isKindOf "helicopter") && !dialog};
+			_answer = ["<img size='9' img image='logisticsHeli.paa' align='center'/>
+						<br />While inside this vehicle and within 50 meters from HQ and flying higher then 15 meters you can <t color='#FF6A32'>slingload logistics crates</t> from the HQ and delieve them to the front.
+						<br/><br/><t color='#FF6A32'>Ammo crates</t> will resupply units and vehicles.
+						<br/><t color='#FF6A32'>Supply crates</t> will repair damaged vehicles and will be used to build FOB and battle emplacements.
+						<br/><t color='#FF6A32'>Fuel crates</t> will refuel vehicles.
+						<br/><br/>Press <t color='#FF6A32'>Interact</t> button to open the logistics dialog while autohovering over the HQ.
+						<br/><br/>Do you want to disable this message in the future?","Logistics Helicopters","Yes","No"] call BIS_fnc_guiMessage;
+
+			waituntil {!isnil "_answer" && !dialog};
+
+			profileNamespace setVariable ["MCC_PRtutorialLogisticsHeli",!_answer];
+		};
+	};
 };

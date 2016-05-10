@@ -34,19 +34,35 @@ class Header
 
 class Params
 {
-	class param_weather
-    {
-            title = "Weather";
-            texts[] = {"Random","clear","cloudy","rain","storm","sandStorm","snow"};
-            values[] = {0,1,2,3,4,5,6};
-            default = 0;
-    };
-
-	class param_daytime
+	class disableGear
 	{
-		title = "Time";
-		texts[] = {"Random","Morning","Day","Evening","Night"};
-		values[] = {0,1,2,3,4};
+		title = "Player Inventory Access";
+		values[] = {0,1};
+		texts[] = {"Disabled","Enabled"};
 		default = 0;
-	}
+	};
+
+	class timeMultiplier
+	{
+		title = "24 Game Hours In RL Hours";
+		values[] = {12,18,24,144};
+		texts[] = {"2h","1.5h","1h","10m DEBUG ONLY"};
+		default = 12;
+	};
+
+	class mccVON
+	{
+		title = "MCC Radio VON";
+		values[] = {0,1};
+		texts[] = {"Disabled","Enabled"};
+		default = 1;
+	};
+
+	class AiSide
+	{
+		title = "AI side";
+		values[] = {0,1,2,3};
+		texts[] = {"None","East","West","Both"};
+		default = 0;
+	};
 };
