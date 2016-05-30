@@ -130,9 +130,9 @@ _fnc_groupSpawn  = {
 
 
 //Spawn AI
-_unitsArray 	= [_faction,"soldier","men"] call MCC_fnc_makeUnitsArray;
+_unitsArray 	= [_faction,"soldier","men",false] call MCC_fnc_makeUnitsArray;
 if (count _unitsArray < 4) then {
-	_unitsArray = [_faction,"soldier"] call MCC_fnc_makeUnitsArray;
+	_unitsArray = [_faction,"soldier","",false] call MCC_fnc_makeUnitsArray;
 };
 
 //No units get out
