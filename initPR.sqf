@@ -5,7 +5,7 @@ missionNameSpace setVariable ["MCC_saveGear",false];
 missionNameSpace setVariable ["MCC_Chat",false];
 missionNameSpace setVariable ["MCC_deletePlayersBody",false];
 missionNameSpace setVariable ["MCC_allowlogistics",true];
-missionNameSpace setVariable ["MCC_allowRTS",true];				//Just for test disable later
+missionNameSpace setVariable ["MCC_allowRTS",false];				//Just for test disable later
 
 //Role selection
 missionNameSpace setVariable ["CP_activated",true];
@@ -18,7 +18,7 @@ missionNameSpace setVariable ["MCC_coverUI",true];
 missionNameSpace setVariable ["MCC_coverVault",true];
 missionNameSpace setVariable ["MCC_interaction",true];
 missionNameSpace setVariable ["MCC_ingameUI",true];
-missionNameSpace setVariable ["MCC_quickWeaponChange",true];
+missionNameSpace setVariable ["MCC_quickWeaponChange",false];
 missionNameSpace setVariable ["MCC_surviveMod",false];
 missionNameSpace setVariable ["MCC_showActionKey",true];
 missionNamespace setVariable ["MCC_allowSQLRallyPoint",true];
@@ -49,7 +49,7 @@ _null = [1,true,true,true,true,true,true] spawn MCC_fnc_inGameUI;
 
 if (isServer || isDedicated) then {
 	0 spawn {
-		private ["_side1","_side2"];
+		private ["_side1","_side2","_header","_costsTable","_varName"];
 		_side1 = west;
 		_side2 = east;
 
@@ -59,9 +59,9 @@ if (isServer || isDedicated) then {
 		[_side2, 200] call BIS_fnc_respawnTickets;
 
 		//Resources
-		missionNamespace setVariable ["MCC_resWest",[5000,5000,5000,200,200]];
-		missionNamespace setVariable ["MCC_resEast",[5000,5000,5000,200,200]];
-		missionNamespace setVariable ["MCC_resGUER",[5000,5000,5000,200,200]];
+		missionNamespace setVariable ["MCC_resWest",[300,300,300,0,0]];
+		missionNamespace setVariable ["MCC_resEast",[300,300,300,0,0]];
+		missionNamespace setVariable ["MCC_resGUER",[300,300,300,0,0]];
 		publicVariable "MCC_resWest";
 		publicVariable "MCC_resEast";
 		publicVariable "MCC_resGUER";
@@ -108,7 +108,12 @@ if (isServer || isDedicated) then {
 			_time = [[6,12,18,0],[0.25,0.25,0.25,0.25]] call bis_fnc_selectRandomWeighted;
 		};
 
-		[[s1,s2,s3,s4,s5,s6],[_side1,_side2]] call MCC_fnc_aasInit;
+		//Start AAS
+		[[s1,s2,s3,s4,s5],[_side1,_side2],1] call MCC_fnc_aasInit;
+
+		//Delete bodies
+		[240] spawn MCC_fnc_deleteBodies;
+
 
 		_time spawn BIS_fnc_paramDaytime;
 
@@ -118,24 +123,98 @@ if (isServer || isDedicated) then {
 			//east
 		    case 1: {
 		    	[_side2] spawn MCC_fnc_aas_AIControl;
-		    	[_side2, _side1, true, 20, true, "OPF_F",300,[["rifleman","ar","at","corpsman","marksman","officer"],[0.8,0.15,0.15,0.2,0.05,0.2]], [19151.4,13270.9,1.25173]] spawn MCC_fnc_aas_AIspawn;
+		    	[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], [13910.6,17281,0]] spawn MCC_fnc_aas_AIspawn;
 		    };
 
 		    //west
 		    case 2: {
 		    	[_side1] spawn MCC_fnc_aas_AIControl;
-		    	[_side1, _side2, true, 20, true, "BLU_F",300,[["officer","rifleman","ar","at","corpsman","marksman"],[0.8,0.15,0.15,0.2,0.05,0.2]], [20803.1,7255.39,0]] spawn MCC_fnc_aas_AIspawn;
+		    	[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"], [12250.8,14432.8,0]] spawn MCC_fnc_aas_AIspawn;
 		    };
 
 		    //both
-		    case 2: {
+		    case 3: {
 		    	{[_x] spawn MCC_fnc_aas_AIControl} foreach [_side1,_side2];
 
 				//Start AI spawn
-				[_side1, _side2, true, 20, true, "BLU_F",300,[["officer","rifleman","ar","at","corpsman","marksman"],[0.8,0.15,0.15,0.2,0.05,0.2]], [20803.1,7255.39,0]] spawn MCC_fnc_aas_AIspawn;
-				[_side2, _side1, true, 20, true, "OPF_F",300,[["rifleman","ar","at","corpsman","marksman","officer"],[0.8,0.15,0.15,0.2,0.05,0.2]], [19151.4,13270.9,1.25173]] spawn MCC_fnc_aas_AIspawn;
+				[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"],[12250.8,14432.8,0]] spawn MCC_fnc_aas_AIspawn;
+				[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], [13910.6,17281,0]] spawn MCC_fnc_aas_AIspawn;
 		    };
 		};
+
+
+		//===============CAS =======================
+
+		//Blufor
+		_varName = format ["MCC_CASConsoleArray%1",_side1];
+		missionNamespace setVariable [_varName,[[["Gun-run (Zeus)"],["B_Plane_CAS_01_F"]],
+									 			[["Rockets-run (Zeus)"],["B_Plane_CAS_01_F"]],
+									 			[["UAV"],["B_UAV_01_F"]],
+									 			[["UAV Armed"],["B_UAV_02_F"]],
+									 			[["Cruise Missile"],[""]],
+									 			[["AC-130"],[""]]]];
+
+		//Opfor
+		_varName = format ["MCC_CASConsoleArray%1",_side2];
+		missionNamespace setVariable [_varName,[[["Gun-run (Zeus)"],["O_Plane_CAS_02_F"]],
+									 			[["Rockets-run (Zeus)"],["O_Plane_CAS_02_F"]],
+									 			[["UAV"],["O_UAV_01_F"]],
+									 			[["UAV Armed"],["O_UAV_02_F"]],
+									 			[["Cruise Missile"],[""]],
+									 			[["AC-130"],[""]]]];
+
+		publicVariable _varName;
+
+		{
+			_costsTable = [[["ammo",100]],
+			               [["ammo",200]],
+			               [["ammo",150],["repair",150]],
+			               [["ammo",300],["repair",300]],
+			               [["ammo",300]],
+			               [["ammo",600],["repair",600]]
+				              ];
+
+			_varName = format ["MCC_CASConsoleArray%1",_x];
+			{
+				missionNamespace setVariable [str _x, _costsTable select _foreachindex];
+				publicVariable str _x;
+			} forEach (missionNamespace getVariable _varName);
+		} forEach [_side1,_side2];
+
+		//===============Airdrops =======================
+
+
+		//Blufor
+		_varName = format ["MCC_ConsoleAirdropArray%1",_side1];
+		missionNamespace setVariable [_varName,[[[["B_G_Offroad_01_armed_F"]],[""],2],
+												[[["B_UGV_01_rcws_F"]],[""],3],
+									 		   [[["Box_NATO_AmmoVeh_F"]],[""],2],
+									 		   [[["CargoNet_01_box_F"]],[""],2],
+									 		   [[["CargoNet_01_barrels_F"]],[""],2]]];
+		publicVariable _varName;
+
+		//Opfor
+		_varName = format ["MCC_ConsoleAirdropArray%1",_side2];
+		missionNamespace setVariable [_varName,[[[["O_G_Offroad_01_armed_F"]],[""],2],
+											   [[["O_UGV_01_rcws_F"]],[""],3],
+									 		   [[["Box_NATO_AmmoVeh_F"]],[""],2],
+									 		   [[["CargoNet_01_box_F"]],[""],2],
+									 		   [[["CargoNet_01_barrels_F"]],[""],2]]];
+		publicVariable _varName;
+
+		{
+			_costsTable = [[["ammo",200],["repair",150]],
+							[["ammo",500],["repair",500]],
+			               [["ammo",150]],
+			               [["repair",150]],
+			               [["fuel",150]]];
+
+			{
+				missionNamespace setVariable [str _x, _costsTable select _foreachindex];
+				publicVariable str _x;
+			} forEach (missionNamespace getVariable _varName);
+
+		} forEach [_side1,_side2];
 	};
 };
 
@@ -145,6 +224,7 @@ if (!isDedicated && hasInterface) then {
 	cutText ["","BLACK OUT",0.1];
 	sleep 1;
 
+	/*
 	//Setup quick weapons
 	if (missionNamespace getVariable ["MCC_isCBA",false]) then {
 		//Switch weapon 1 - Primary/handgun
@@ -159,6 +239,7 @@ if (!isDedicated && hasInterface) then {
 		//Switch weapon 4 - Primary/handgun
 		["MCC", "switchWeapon4", ["Switch Weapons 4: Utility", ""], {if ((player getVariable ["cpReady",true]) && !(player getvariable ["MCC_medicUnconscious",false]) && (missionNamespace getvariable ["MCC_quickWeaponChange",false])) then {[5] spawn MCC_fnc_weaponSelect;true}}, {}, [5, [false,false,false]],false] call cba_fnc_addKeybind;
 	};
+	*/
 
 	//Disable inventory
 	player addEventHandler ["InventoryOpened", {true}];

@@ -1,9 +1,9 @@
 #include "defines.hpp"
-
+/*
 author = Shay_gman;
 overviewPicture = "PRloadingLogo.paa";
 overviewText = "Lets do some PR in ArmA.";
-onLoadName = Project Reality (MCC) - Pangaia;
+onLoadName = Project Reality (MCC) - Infantry Lakka;
 loadScreen = "PRloadingLogo.paa";
 onLoadMission =  Project Reality is a tactical advance and secure PvP match using MCC engine and a built in rank system and more;
 
@@ -31,7 +31,7 @@ class Header
 	minPlayers = 1;
 	maxPlayers = 60;
 };
-
+*/
 class Params
 {
 	class disableGear
@@ -63,6 +63,6 @@ class Params
 		title = "AI side";
 		values[] = {0,1,2,3};
 		texts[] = {"None","East","West","Both"};
-		default = 0;
+		default = 3;
 	};
 };

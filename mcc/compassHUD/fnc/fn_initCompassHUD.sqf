@@ -57,10 +57,10 @@ MCC_fnc_compHudEVH = {
     if (uiNamespace getVariable ["MCC_HuD_compassTeamMates",true]) then {
         {
             if (_x != player) then {
-                _index = _x getVariable ["MCC_hud_compass_unitMarker",-10];
+                _index = _x getVariable ["MCC_hud_compass_unitMarker",-1];
                 _iconSize = (1-((player distance _x)/300 min 1))*0.04;
 
-                if (isNull ((uiNamespace getVariable "MCC_hud_compass") displayCtrl _index)) then {
+                if (_index == -1) then {
                     //Create ctrl
                     _indexCounter = _indexCounter + 1;
                     (uiNamespace getVariable "MCC_hud_compass") ctrlCreate ["RscPicture", _indexCounter,((uiNamespace getVariable "MCC_hud_compass") displayCtrl 1)];
