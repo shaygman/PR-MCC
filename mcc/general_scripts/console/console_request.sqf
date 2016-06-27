@@ -14,8 +14,6 @@ _type = _this select 0;
 _mccdialog = findDisplay mcc_playerConsole_IDD;
 _available = false;
 
-/*[[[["B_MRAP_01_F","B_MRAP_01_F"]],["I_Heli_Transport_02_F"],true],[[["B_supplyCrate_F"]],["I_Heli_Transport_02_F"],true]]*/
-
 switch (_type) do {
 	//AirDrop
    	case 0:	{

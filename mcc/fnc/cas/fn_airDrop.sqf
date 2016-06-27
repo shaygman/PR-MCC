@@ -169,11 +169,13 @@ if (tolower _planeType in ["west","east","guer","civ","logic"]) then  {
 	//ac-130
 	if (tolower _spawnkind == "ac-130") exitWith {
 		//AC-130
-		[[2,compile format ['["MCCNotifications",["AC-130 Entered the scene","%1data\AC130_icon.paa",""]] call bis_fnc_showNotification;',MCC_path]], "MCC_fnc_globalExecute", side player, false] spawn BIS_fnc_MP;
 
+		[[2,compile format ['["MCCNotifications",["AC-130 Entered the scene","%1data\AC130_icon.paa",""]] call bis_fnc_showNotification;',MCC_path]], "MCC_fnc_globalExecute", playerSide, false] spawn BIS_fnc_MP;
+
+		_pos set [2,(_pos select 2)+500];
 		//register AC-130
 		missionNamespace setVariable ["MCC_ACConsoleUp",true];
-		missionNamespace setVariable ["MCC_consoleACpos",[_pos select 0, _pos select 1, (_pos select 0) + 300]];
+		missionNamespace setVariable ["MCC_consoleACpos",_pos];
 		missionNameSpace setVariable ["MCC_ConsoleACTimeStart",time];
 		missionNameSpace setVariable ["MCC_ConsoleACTime",120];
 		publicVariable "MCC_ConsoleACTimeStart";
@@ -199,6 +201,7 @@ if (tolower _planeType in ["west","east","guer","civ","logic"]) then  {
 			_uav setPos _center;
 			createVehicleCrew _uav;
 			_uav flyInHeight (_center select 2);
+			group driver _uav setCombatMode "BLUE";
 
 			for "_i" from 0 to 360 step 90 do
 			{

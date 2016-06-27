@@ -454,13 +454,15 @@ switch _mode do {
 			private ["_obj","_text","_color","_texture","_pos"];
 			{
 				_obj 	= _x;
+				_pos = position ((_obj getvariable ["areas",[objNull]]) select 0);
+				_pos set [2,(_pos select 2)+20];
+
 				_text 	= _obj getvariable ["name",""];
 				_texture = _obj getVariable ["texture",""];
 				_color = [(_obj getvariable ["owner",sideUnknown])] call bis_fnc_sidecolor;
-				_color set [3,1-(((player distance _obj)/1000)) max 0.2];
-				_text = _text + format [" %1 m",floor (player distance _obj)];
-				_pos = position _obj;
-				_pos set [2,30];
+				_color set [3,1-(((player distance2d _pos)/1000)) max 0.2];
+				_text = _text + format [" %1 m",floor (player distance2d _pos)];
+
 
 				drawIcon3D [
 								_texture,

@@ -1,5 +1,4 @@
-private ["_mccdialog","_comboBox","_displayname","_time", "_index","_message","_messageFinal","_type",
-		 "_insetionArray","_control","_data","_rad","_alt","_coords","_effectParams"];
+private ["_mccdialog","_comboBox","_displayname","_time", "_index","_message","_messageFinal","_type","_insetionArray","_control","_data","_rad","_alt","_coords","_effectParams"];
 // By: Shay_gman
 // Version: 1.1 (April 2013)
 #define mcc_playerConsole3_IDD 5010

@@ -123,13 +123,13 @@ if (isServer || isDedicated) then {
 			//east
 		    case 1: {
 		    	[_side2] spawn MCC_fnc_aas_AIControl;
-		    	[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], [13910.6,17281,0]] spawn MCC_fnc_aas_AIspawn;
+		    	[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], position hq_side2] spawn MCC_fnc_aas_AIspawn;
 		    };
 
 		    //west
 		    case 2: {
 		    	[_side1] spawn MCC_fnc_aas_AIControl;
-		    	[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"], [12250.8,14432.8,0]] spawn MCC_fnc_aas_AIspawn;
+		    	[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"], position hq_side1] spawn MCC_fnc_aas_AIspawn;
 		    };
 
 		    //both
@@ -137,8 +137,8 @@ if (isServer || isDedicated) then {
 		    	{[_x] spawn MCC_fnc_aas_AIControl} foreach [_side1,_side2];
 
 				//Start AI spawn
-				[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"],[12250.8,14432.8,0]] spawn MCC_fnc_aas_AIspawn;
-				[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], [13910.6,17281,0]] spawn MCC_fnc_aas_AIspawn;
+				[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"],position hq_side1] spawn MCC_fnc_aas_AIspawn;
+				[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], position hq_side2] spawn MCC_fnc_aas_AIspawn;
 		    };
 		};
 
