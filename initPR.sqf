@@ -27,6 +27,9 @@ missionNamespace setVariable ["MCC_allowSQLRallyPoint",true];
 missionNameSpace setVariable ["MCC_medicXPmesseges",true];
 missionNameSpace setVariable ["MCC_medicPunishTK",true];
 
+//Rspawn
+missionNameSpace setVariable ["MCC_respawnOnGroupLeader",(paramsArray select 4) ==1];
+
 //Radio
 if ((paramsArray select 2) ==1) then {
 	missionNameSpace setVariable ["MCC_VonRadio",true];

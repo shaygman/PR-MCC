@@ -70,8 +70,7 @@ _text spawn
 
 	while {alive player} do
 	{
-		if (vehicle player == player) then
-		{
+		if (vehicle player == player && !(player getVariable ["MCC_medicUnconscious",false])) then {
 			_objects = player nearObjects ["UserTexture1m_F",7];
 			_interactiveObjects = [];
 

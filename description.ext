@@ -32,6 +32,9 @@ class Header
 	maxPlayers = 60;
 };
 */
+
+
+enableDebugConsole = 1;
 class Params
 {
 	class disableGear
@@ -64,5 +67,13 @@ class Params
 		values[] = {0,1,2,3};
 		texts[] = {"None","East","West","Both"};
 		default = 3;
+	};
+
+	class spawnOnLeader
+	{
+		title = "Spawn On Leader";
+		values[] = {0,1};
+		texts[] = {"Disabled","Enabled"};
+		default = 1;
 	};
 };
