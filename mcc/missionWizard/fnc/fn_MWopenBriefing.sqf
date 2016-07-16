@@ -29,8 +29,7 @@
 #define MCC_MWBriefingsTooltip_IDC 9511
 #define MCC_MWBriefingText_IDC 9512
 
-private ["_mapCenter","_missions","_ok","_markers","_images","_overcast","_scale","_defaultScale","_simulationEnabled","_colorOutside","_maxSatelliteAlpha",
-         "_displayClass","_display","_playerIcon","_playerColor","_cloudTextures","_cloudsGrid","_cloudsMax","_cloudsSize","_map","_fade","_brief","_sounds"];
+private ["_mapCenter","_missions","_ok","_markers","_images","_overcast","_scale","_defaultScale","_simulationEnabled","_colorOutside","_maxSatelliteAlpha","_displayClass","_display","_playerIcon","_playerColor","_cloudTextures","_cloudsGrid","_cloudsMax","_cloudsSize","_map","_fade","_brief","_sounds"];
 
 disableserialization;
 
@@ -40,12 +39,13 @@ _mapCenter 			= _this select 0;
 _missions 			= _this select 1;
 _defaultScale 		= _this select 2;
 _brief 				= _this select 3;
-_sounds				= if (count _this >4) then {_this select 4} else {[]};
+_sounds				= param [4, [], [[]]];
 
 _mapCenter 			= _mapCenter call bis_fnc_position;
 _overcast 			= overcast;
 _isNight 			= if ((date select 3)>19 || (date select 3)<6) then {true} else {false};
 
+if (count _this <=0) exitWith {};
 
 _simulationEnabled = true;
 waituntil {((player getVariable ["cpReady",true]) && !(player getvariable ["MCC_medicUnconscious",false]))};
@@ -116,7 +116,7 @@ if (count _missions > 0) then {
 		_infoText = format ["<t size='1' color='#a8e748'>%1</t>",_title];
 		if (_player != "") then {_infoText = _infoText + format ["<br /><t size='0.2' color='#00000000'>-<br /></t><img size='1' image='%2' color='%3'/><t size='0.8'> %1</t>",_player,_playerIcon,_playerColor];};
 		if (_description != "") then {_infoText = _infoText + format ["<br /><t size='0.5' color='#00000000'>-<br /></t><t size='0.8'>%1</t>",_description];};
-		//if (_picture != "") then {_infoText = _infoText + format ["<br /><img size='5.55' image='%1' />",_picture];};
+		if (_picture != "") then {_infoText = _infoText + format ["<br /><img size='5.55' image='%1' />",_picture];};
 
 		MCC_MWMap_missions set [
 			count MCC_MWMap_missions,
@@ -311,8 +311,8 @@ MCC_fnc_MWMapOpen_draw = {
 			case 10;
 			case 9:
 			{
-				[_selected,_display,MC_MWMap_mousePos] execVM MCC_path + "mcc\fnc\missionWizard\fn_MWMapTooltip.sqf";
-				//[_selected,_display,MC_MWMap_mousePos] call MCC_fnc_MWMapTooltip;
+				//[_selected,_display,MC_MWMap_mousePos] execVM MCC_path + "mcc\missionWizard\fnc\fn_MWMapTooltip.sqf";
+				[_selected,_display,MC_MWMap_mousePos] spawn MCC_fnc_MWMapTooltip;
 			};
 		};
 	};

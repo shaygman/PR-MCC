@@ -77,6 +77,8 @@ switch (true) do {
 	};
 
 	case (_taskType in ["clear_area"]): {
+		waitUntil {!simulationEnabled _logic};
+		/*
 		//Create Trigger
 		_pos = getpos _logic;
 		_trg = createTrigger["EmptyDetector", _pos];
@@ -94,7 +96,7 @@ switch (true) do {
 		waituntil {count list _trg < 3};
 		deleteVehicle _trg;
 		[2, "",[], "", "", "Empty", ("clearArea" + _name), []] call MCC_fnc_makeMarker;
-
+		*/
 		_logic setvariable ["RscAttributeTaskState","Succeeded", true];
 	};
 
@@ -102,8 +104,11 @@ switch (true) do {
 		waituntil {!alive _attachedUnit};
 		_logic setvariable ["RscAttributeTaskState","Succeeded", true];
 	};
+
 };
 
-_logic setvariable ["updated",true];
-sleep 10;
-deletevehicle _logic;
+if (!isNull _logic) then {
+	_logic setvariable ["updated",true];
+	sleep 10;
+	deletevehicle _logic;
+};

@@ -245,7 +245,7 @@ switch _mode do {
 
 			//--- Load variables
 			_areas = _logic getvariable ["areas",_areas];
-			_sides = _logic getvariable ["sides",_sides];
+			_sides = [west,east,resistance];
 			_sectorScore = _logic getvariable ["sideScore",[0,0,0,0,0,0]];
 			_owner = _logic getvariable ["owner",sideUnknown];
 			_sectorBalance = [0,0,0,0,0,0];
@@ -258,7 +258,7 @@ switch _mode do {
 						if (_side in _sides && !(vehicle _x isKindOf "air")) then {
 							_sideID = _side call bis_fnc_sideID;
 							_balance = _sectorBalance select _sideID;
-							_balance = _balance + (((count crew _x) min 3)/100);
+							_balance = _balance + (((count crew _x) min 3)/200);
 							_sectorBalance set [_sideID,_balance];
 						};
 
@@ -388,6 +388,14 @@ switch _mode do {
 			sleep 1;
 		};
 
+		//Disable Progress Bar
+		for "_i" from 0 to (count _playersInList)-1 do {
+			private ["_player"];
+			_player = _playersInList select _i;
+			[[_logic,[],true,"player",false],"MCC_fnc_moduleCapturePoint",_player] call bis_fnc_mp;
+			sleep 0.01;
+		};
+
 		//--- Sector finalized
 		if (isnull _logic) then {
 
@@ -407,7 +415,8 @@ switch _mode do {
 
 			//--- Make markers transparent
 			{
-				_x setmarkeralpha (markeralpha _x * 0.5);
+				//_x setmarkeralpha (markeralpha _x * 0.5);
+				deleteMarker _x;
 			} foreach (_markersArea + [_markerIcon,_markerIconText]);
 		};
 

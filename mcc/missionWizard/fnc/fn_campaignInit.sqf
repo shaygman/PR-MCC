@@ -6,8 +6,9 @@
 // _factionEnemy	STRING - faction enemy
 //_missionMax		INTEGER - max amount of missions before mission over
 //_missionRotation	INTEGER - max missions in the same area
+//_tileSize			INTEGER - Size of the tile while portfiling the map
 //=======================================================================================================================================================================
-private ["_sidePlayer","_sideEnemy","_factionCiv","_center","_arrayAssets","_locations","_pos","_temploc","_AOlocation","_missionDone","_missionMax","_AOSize","_factionPlayer","_difficulty","_totalPlayers","_sidePlayer2","_tickets","_missionRotation"];
+private ["_sidePlayer","_sideEnemy","_factionCiv","_center","_arrayAssets","_locations","_pos","_temploc","_AOlocation","_missionDone","_missionMax","_AOSize","_factionPlayer","_difficulty","_totalPlayers","_sidePlayer2","_tickets","_missionRotation","_basePos","_tileSize","_reconMission"];
 
 //wait for MCC
 waitUntil {!isnil "MCC_initDone"};
@@ -23,9 +24,10 @@ _difficulty  = param [6, 20];
 _sidePlayer2=  param [7, sideLogic];
 _tickets = param [8, 100];
 _missionRotation = param [9, 4,[0]];
+_tileSize = param [10, 250,[0]];
 
 _totalPlayers = ((playersNumber _sidePlayer)+1);
-_AOSize = (20*_totalPlayers) max 300;
+_AOSize = 300;
 
 //Set campaign var
 missionNamespace setVariable ["MCC_isCampaignRuning",true];
@@ -34,13 +36,30 @@ publicVariable "MCC_isCampaignRuning";
 missionNamespace setVariable ["MCC_campaignEnemyFaction",_factionEnemy];
 publicVariable "MCC_campaignEnemyFaction";
 
-
 //Time Multuplier
 if (timeMultiplier < 12) then {setTimeMultiplier 12};
 
 //Tickets
 if (([_sidePlayer] call BIS_fnc_respawnTickets)<_tickets) then {[_sidePlayer, _tickets] call BIS_fnc_respawnTickets};
 if (([_sidePlayer2] call BIS_fnc_respawnTickets)<_tickets && _sidePlayer2 != sideLogic) then {[_sidePlayer2, _tickets] call BIS_fnc_respawnTickets};
+
+//init map
+[_sideEnemy,_tileSize,0.2] call MCC_fnc_campaignInitMap;
+
+//Mark the starting bases
+{
+	_basePos = switch (_x) do
+				{
+					case east: {missionNamespace getVariable ["MCC_START_EAST",[0,0,0]]};
+					case west: {missionNamespace getVariable ["MCC_START_WEST",[0,0,0]]};
+					case resistance: {missionNamespace getVariable ["MCC_START_GUER",[0,0,0]]};
+					default	{[0,0,0]};
+				};
+	if !(_basePos isEqualTo [0,0,0]) then {
+		[_basePos,1000,_x,0.2] spawn MCC_fnc_campaignPaintMarkers;
+	};
+} forEach [_sidePlayer,_sidePlayer2];
+
 
 //Build the faction's unitsArrays and send it to the server.
 _check = [_factionEnemy, _sideEnemy] call MCC_fnc_MWCreateUnitsArray;
@@ -51,8 +70,7 @@ waituntil {_check};
 //Search the map for locations
 private ["_worldPath","_mapSize","_mapCenter"];
 
-if (isnil "MCC_worldArea") then
-{
+if (isnil "MCC_worldArea") then {
 	_worldPath = configfile >> "cfgworlds" >> worldname;
 	_mapSize = getnumber (_worldPath >> "mapSize");
 	if (_mapSize == 0) then {_mapSize = 10000};
@@ -102,68 +120,62 @@ if (count _locations == 0) then {
 //Pick first location
 _missionDone = 0;
 
-//main mission loop
-private ["_goodLocation","_AOlocationPos","_AOlocationName","_index"];
-_index = floor random count _locations;
-_AOlocation = _locations select _index;
-_AOlocationPos = _AOlocation select 0;
-_AOlocationName = _AOlocation select 1;
-_locations set [_index,-1];
-_locations = _locations - [-1];
+//Mark all the locations as hot spots
+{
+	[(_x select 0),400,_sideEnemy,0.4,[_sidePlayer,_sidePlayer2]] spawn MCC_fnc_campaignPaintMarkers;
+	sleep 0.1;
+} forEach _locations;
 
-//Sort locations by distance from the first location
-_locations = [_locations,[_AOlocationPos],{_input0 distance (_x select 0)},"ASCEND"] call BIS_fnc_sortBy;
+//main mission loop
+private ["_AOlocationPos","_AOlocationName","_index","_goodLocation"];
+
+//Sort locations by distance from the players base
+_basePos = switch (_sidePlayer) do
+			{
+				case east: {missionNamespace getVariable ["MCC_START_EAST",[0,0,0]]};
+				case west: {missionNamespace getVariable ["MCC_START_WEST",[0,0,0]]};
+				case resistance: {missionNamespace getVariable ["MCC_START_GUER",[0,0,0]]};
+				default	{[0,0,0]};
+			};
+_locations = [_locations,[_basePos],{_input0 distance (_x select 0)},"ASCEND"] call BIS_fnc_sortBy;
+
 
 //Start the campaign missions?
 if (_missionMax == 0) exitWith {};
 
-while {count _locations > 0 && _missionDone <= _missionMax} do {
 
+while {count _locations > 0 && _missionDone <= _missionMax } do {
+
+	//update borders
+	{
+		_x setMarkerAlpha 0.4
+	} forEach ([_sideEnemy] call MCC_fnc_campaignGetBorders);
+
+	//Find mission location
 	_goodLocation = false;
-	while {! _goodLocation && count _locations > 0} do {
+	_reconMission = random 1 <= _missionRotation;
 
-		_goodLocation = true;
+	while {count _locations > 0 && !_goodLocation} do {
+		//_index = floor random count _locations;
+		_index = if (_reconMission) then {floor random count _locations} else {0} ;
+		_AOlocation = _locations select _index;
+		_AOlocationPos = _AOlocation select 0;
+		_AOlocationName = _AOlocation select 1;
+		_locations set [_index,-1];
+		_locations = _locations - [-1];
 
-	    //if inside MCC zone black list him
-	    private ["_xPosWest","_xPosEast","_yPosNorth","_yPosSouth","_zoneSize"];
-		{
-			_xPosWest = [(_AOlocationPos select 0)-_AOSize*2,_AOlocationPos select 1,_AOlocationPos select 2];
-			_xPosEast = [(_AOlocationPos select 0)+_AOSize*2,_AOlocationPos select 1,_AOlocationPos select 2];
-			_yPosNorth = [_AOlocationPos select 0,(_AOlocationPos select 1)+_AOSize*2,_AOlocationPos select 2];
-			_yPosSouth = [_AOlocationPos select 0,(_AOlocationPos select 1)-_AOSize*2,_AOlocationPos select 2];
+		_goodLocation = ([_AOlocationPos] call MCC_fnc_campaignGetNearestTile) select 1 == _sideEnemy;
 
-			if (_foreachindex > 0) then {
-				_zoneSize = mcc_zone_size select _foreachindex;
-				if ([_x, _zoneSize,_xPosWest] call BIS_fnc_isInsideArea ||
-					[_x, _zoneSize,_xPosEast] call BIS_fnc_isInsideArea ||
-					[_x, _zoneSize,_yPosNorth] call BIS_fnc_isInsideArea ||
-					[_x, _zoneSize,_yPosSouth] call BIS_fnc_isInsideArea) exitWith {_goodLocation = false};
-			};
-		} forEach mcc_zone_pos;
-		if (_AOlocationPos distance (getMarkerPos "RESPAWN_WEST")< 2000) then {_goodLocation = false};
-		if (_AOlocationPos distance (getMarkerPos "RESPAWN_EAST")< 2000) then {_goodLocation = false};
-		if (_AOlocationPos distance (getMarkerPos "RESPAWN_GUERRILA")< 2000) then {_goodLocation = false};
-
-		if (!_goodLocation && (count _locations > 0)) then {
-
-			//get a new location
-			_index = if (_missionDone mod _missionRotation == 0) then {floor random count _locations} else {0} ;
-			_AOlocation = _locations select _index;
-			_AOlocationPos = _AOlocation select 0;
-			_AOlocationName = _AOlocation select 1;
-			_locations set [_index,-1];
-			_locations = _locations - [-1];
-
-			//Sort locations by distance from the first location
-			_locations = [_locations,[_AOlocationPos],{_input0 distance (_x select 0)},"ASCEND"] call BIS_fnc_sortBy;
-		};
 		sleep 0.5;
 	};
 
 
 
 	//No locations? mission won
-	if (count _locations == 0) exitWith {};
+	if (count _locations == 0) exitWith {
+		//Mission won outro
+		[["everyonewon"], "BIS_fnc_endMissionServer", false, false] spawn BIS_fnc_MP
+	};
 
 	private ["_totalEnemyUnits","_isCQB","_isCiv","_animals","_vehicles","_armor","_artillery","_isRoadblocks","_isIED","_isAS","_isSB","_reinforcement","_obj1","_obj2","_obj3","_weatherChange","_preciseMarkers"];
 	_aoPos = getMarkerpos _AOlocationName;
@@ -178,12 +190,12 @@ while {count _locations > 0 && _missionDone <= _missionMax} do {
 	_isIED = random 1 > 0.7;
 	_isAS = random 1 > (missionNamespace getvariable [format ["MCC_civRelations_%1",_sidePlayer],0.5]);
 	_isSB = random 1 > (missionNamespace getvariable [format ["MCC_civRelations_%1",_sidePlayer],0.5]);
-	_reinforcement =if (random 100 < (_difficulty)*2) then {[1,1,1,1,2] call BIS_fnc_selectRandom} else {0};
-	_obj1 = if (random 1 > 0.2) then {["Clear Area","Secure HVT","Kill HVT","Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Aquire Intel"] call BIS_fnc_selectRandom} else {"Clear Area"};
+	_reinforcement =if (random 100 < (_difficulty)*2 || _reconMission) then {[1,1,1,1,2] call BIS_fnc_selectRandom} else {0};
+	_obj1 = if (_reconMission) then {["Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Secure HVT","Kill HVT","Aquire Intel"] call BIS_fnc_selectRandom} else {"Clear Area"};
 
-	_obj2 = if (random 100 < _difficulty) then {"Destroy Radar/Radio"} else {"None"};
-	_obj3 = if (random 100 < _difficulty) then {["Secure HVT","Kill HVT","Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Aquire Intel","Disarm IED"] call BIS_fnc_selectRandom} else {"None"};
-	_stealth = false;
+	_obj2 = if (random 80 < _difficulty) then {"Destroy Radar/Radio"} else {"None"};
+	_obj3 = if (random 80 < _difficulty) then {["Destroy Vehicle","Destroy AA","Destroy Artillery","Destroy Weapon Cahce","Destroy Fuel Depot","Secure HVT","Kill HVT","Aquire Intel","Disarm IED"] call BIS_fnc_selectRandom} else {"None"};
+	_stealth = _reconMission;
 	_weatherChange = 0;
 	_playMusic = 1;
 	_preciseMarkers = false;
@@ -196,9 +208,6 @@ while {count _locations > 0 && _missionDone <= _missionMax} do {
 		[_isCQB, _isCiv, _armor, _vehicles, _stealth, _isIED, _isAS, _isSB, _isRoadblocks, _animals],
 		[_reinforcement, _artillery]
 	] spawn MCC_fnc_MWinitMission;
-
-	//Create mission Markers
-	[1, "ColorRed",[_AOSize*3,_AOSize*3], "ELLIPSE", "Border", "Empty", "MCC_campaignMarker", _AOlocationPos] call MCC_fnc_makeMarker;
 
 	private ["_activeObjectives","_failedObjectives","_totalObjectives","_tower"];
 	sleep 60;
@@ -260,7 +269,7 @@ while {count _locations > 0 && _missionDone <= _missionMax} do {
 		sleep 5;
 	};
 
-	sleep 5;
+	sleep 2;
 	_ticketsEnd = [_sidePlayer] call BIS_fnc_respawnTickets;
 	_sumTickets = _ticketsStart - _ticketsEnd;
 
@@ -271,25 +280,16 @@ while {count _locations > 0 && _missionDone <= _missionMax} do {
 		["side",_activeObjectives,_failedObjectives,_sidePlayer2,_totalPlayers,_difficulty,40,[0.2,0.4,0.2,0.15,0.05],_sumTickets] call MCC_fnc_missionDone;
 	};
 
-	sleep 5;
 	//clean up
 	[_AOlocationPos,_AOSize*4] spawn {sleep 1200; [_this select 0,_this select 1,0] call MCC_fnc_deleteBrush};
-	[2, "", "", "", "", "", "MCC_campaignMarker", []] call MCC_fnc_makeMarker;
 
 	//Mark area as captured
-	private ["_markerName","_markerColor"];
-	_markerName = format ["MCC_capturedMarker_%1_%2", _sidePlayer, [format ["MCC_capturedMarker_%1_Counter",_sidePlayer],1] call bis_fnc_counter];
-	publicVariable format ["MCC_capturedMarker_%1_Counter",_sidePlayer];
-
-	_markerColor = switch (_sidePlayer) do {
-		    case west: {"ColorWEST"};
-		    case east: {"ColorEAST"};
-		    default {"ColorGUER"};
-		};
-	[1, _markerColor,[_AOSize*2,_AOSize*2], "RECTANGLE", "Solid", "Empty", _markerName, _AOlocationPos] call MCC_fnc_makeMarker;
+	[_AOlocationPos,_AOSize*3,_sidePlayer,0.2,[]] spawn MCC_fnc_campaignPaintMarkers;
 
 	_missionDone = _missionDone + 1;
 	_difficulty = (_difficulty * 1.1) min 60;
+
+	sleep 5;
 };
 
 //Mission won outro

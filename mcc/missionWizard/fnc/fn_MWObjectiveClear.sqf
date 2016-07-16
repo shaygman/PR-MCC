@@ -15,11 +15,10 @@ _side 			= _this select 2;
 _faction 		= _this select 3;
 _sidePlayer 	= _this select 4;
 _preciseMarkers = _this select 5;
-_campaignMission = [_this, 6, false, [false]] call BIS_fnc_param;
-_maxObjectivesDistance = [_this, 7, 400, [0]] call BIS_fnc_param;
+_campaignMission = param [ 6, false, [false]];
+_maxObjectivesDistance = param [ 7, 400, [0]];
 
-if (_isCQB) then
-{
+if (_isCQB) then {
 	_range = if (_campaignMission) then {100} else {50};
 
 	_array = [_objPos, 100] call MCC_fnc_MWFindbuildingPos;

@@ -7,14 +7,14 @@
 // Return - [taskName,Task pos]
 //==============================================================================================================================================================================
 private ["_obj","_task","_preciseMarker","_type","_stringName","_stringDescription","_pos","_objectName","_missionTime","_missionIntel","_indecator","_capturVar",
-      "_stateCond","_name","_missionWherabouts","_side","_sidePlayer"];
+      "_stateCond","_name","_missionWherabouts","_side","_sidePlayer","_pic"];
 
 _obj 			= _this select 0;
 _task 			= _this select 1;
 _preciseMarker 	= _this select 2;
-_side = [_this, 3, east] call BIS_fnc_param;
-_maxObjectivesDistance = [_this, 4, 400, [0]] call BIS_fnc_param;
-_sidePlayer = [_this, 5, sideLogic] call BIS_fnc_param;
+_side = param [3, east];
+_maxObjectivesDistance = param [4, 400, [0]];
+_sidePlayer = param [5, sideLogic];
 
 _name = FORMAT ["MCCMWObject_%1", ["MCCMWObject_",1] call bis_fnc_counter];
 _nameTask = FORMAT ["Objective %1:", ["",1] call bis_fnc_counter];
@@ -50,6 +50,7 @@ _pos = if (typeName _obj == "OBJECT") then {getpos _obj} else {_obj};
 if !(_preciseMarker) then {
 	_pos =  [(_pos select 0) + (random 300 - random 300),(_pos select 1) + (random 300 - random 300),(_pos select 2)];
 };
+_pic = "";
 
 switch (_task) do {
    //Hostage
@@ -70,6 +71,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "a3\Missions_F_BOOTCAMP\data\img\Bootcamp_overview_CA.paa";
    };
 
    //Kill
@@ -88,6 +90,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
 							];
+      _pic = "\a3\Missions_F_Bootcamp\data\img\Boot_m04_overview_CA.paa";
    };
 
    //destroy_tanks
@@ -101,6 +104,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "\a3\Missions_F_EPA\data\img\B_skirmish01_overview_CA.paa";
    };
 
    //destroy_aa
@@ -114,6 +118,8 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+
+      _pic = "\a3\Missions_F_EPA\data\img\B_m02_2_overview_CA.paa";
    };
 
    //destroy_artillery
@@ -127,7 +133,8 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
-   };
+      _pic = "\a3\Missions_F_EPA\data\img\B_out2_overview_CA.paa";
+  };
 
    //destroy_cache
    case "destroy_cache": {
@@ -138,6 +145,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+        _pic = "\a3\Missions_F_EPA\data\img\B_m01_overview_CA.paa";
 
    };
 
@@ -150,6 +158,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "\a3\Missions_F_EPA\data\img\B_m03_overview_CA.paa";
 
    };
 
@@ -162,6 +171,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "\a3\Missions_F_EPA\data\img\B_m06_overview_CA.paa";
    };
 
    //destroy_radar
@@ -173,6 +183,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "\a3\Missions_F_EPA\data\img\A_m04_overview_CA.paa";
    };
 
    //pick_intel
@@ -186,6 +197,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "\a3\Missions_F_EPA\data\img\A_hub02_overview_CA.paa";
    };
 
    //clear_area
@@ -196,6 +208,7 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+      _pic = "\a3\Missions_F_EPA\data\img\A_m02_overview_CA.paa";
    };
 
    //disableIED
@@ -206,6 +219,8 @@ switch (_task) do {
                              , _missionWherabouts call BIS_fnc_selectRandom
                              , _stringName
                              ];
+
+      _pic = "\a3\Missions_F_EPA\data\img\C_m02_overview_CA.paa";
    };
 };
 
@@ -213,7 +228,7 @@ private ["_group","_vehicle"];
 
 _group = createGroup sidelogic;
 
-_vehicle =  _group createunit ["ModuleObjective_F", _pos,[],0.5,"NONE"];
+_vehicle = _group createunit ["ModuleObjective_F", _pos,[],0.5,"NONE"];
 _vehicle setvariable ["RscAttributeOwners",[_sidePlayer],true];
 if (typeName _obj == "OBJECT") then {_vehicle setvariable ["AttachObject_object",_obj,true]};
 _vehicle setvariable ["RscAttributeTaskState","created", true];
@@ -223,6 +238,18 @@ MCC_curator addCuratorEditableObjects [[_vehicle],false];
 _vehicle setvariable ["updated",true];
 [_vehicle,_side,_maxObjectivesDistance] spawn MCC_fnc_customTasks;
 
-MCC_MWObjectivesNames = [_pos,"",_stringName,_stringDescription,"","",1,[],_vehicle];
+//sieze area mission
+if (_task == "clear_area") then {
+    //_vehicle setvariable ["Name",_nameTask];
+    _vehicle setvariable ["OnOwnerChange",format ["if ((_this select 1) == %1) then {(_this select 0) enableSimulation false};", _sidePlayer]];
+    _vehicle setvariable ["type",4];
+    _vehicle setvariable ["radius",_maxObjectivesDistance];
+    //_vehicle setvariable ["enableHUD",false];
+    _vehicle setvariable ["sides",[_side,_sidePlayer]];
+    _vehicle setvariable ["owner",_side];
+    [_vehicle] spawn MCC_fnc_moduleCapturePoint;
+};
+
+MCC_MWObjectivesNames = [_pos,"",_stringName,_stringDescription,"",_pic,1,[],_vehicle];
 publicVariable "MCC_MWObjectivesNames";
 

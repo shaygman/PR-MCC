@@ -31,6 +31,7 @@ if (count _classParams == 0) exitwith {
 
 //--- Set text so height can be calculated
 _tooltip ctrlsetstructuredtext parsetext (_classParams select 8);
+_count = ((count (toArray (_classParams select 8)))/2000)+0.1;
 
 //--- Calculate position
 _infoPosX = (_mousePos select 0);
@@ -53,7 +54,7 @@ _tooltip ctrlcommit 0;
 
 //Reveal background info
 _tooltip ctrlShow true;
-_tooltip ctrlSetPosition [_infoPosX, _infoPosY,0.22 * safezoneW,0.24 * safezoneH];
+_tooltip ctrlSetPosition [_infoPosX, _infoPosY,0.15 * safezoneW,_count * safezoneH];
 _tooltip ctrlCommit 0;
 
 sleep 1;

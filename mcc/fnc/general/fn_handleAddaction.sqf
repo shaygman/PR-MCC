@@ -75,8 +75,7 @@ _text spawn
 			_interactiveObjects = [];
 
 			//Handle Objects
-			if (count _objects > 0) then
-			{
+			if (count _objects > 0) then {
 				_selected = objnull;
 				{
 					_tested = ([_objects,[],{player distance _x},"ASCEND"] call BIS_fnc_sortBy) select _foreachIndex;
@@ -84,8 +83,7 @@ _text spawn
 					if (_dir>340 || _dir < 20) exitWith {_selected = _tested};
 				} foreach _objects;
 
-				if (!isnull _selected) then
-				{
+				if (!isnull _selected) then {
 					//IED
 					_text =_selected getVariable ["MCC_helperText",""];
 					if ((_text != "") && !(_selected getVariable ["MCC_isInteracted",false])) then

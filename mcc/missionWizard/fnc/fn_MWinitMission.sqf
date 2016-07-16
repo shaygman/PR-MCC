@@ -46,10 +46,7 @@
 //	_reinforcement			Integer, reinforcement 0 - no;	1- Aerial;	2 - Motorized;	3 - Random;
 //	_artillery					Integer, reinforcement 0 - no;	1- mortars;	2 - self propeled;	3 - Random;
 //========================================================================================================================================================================================
-private ["_missionCenter","_missionCenterTrigger","_totalEnemyUnits","_isCQB","_objType","_objArray","_objFirstTime",
-         "_minObjectivesDistance","_maxObjectivesDistance","_objPos","_timeStart","_enemySide","_enemyfaction","_sidePlayer","_factionPlayer","_obj1","_obj2","_obj3","_pos","_center","_wholeMap",
-		 "_armor","_vehicles","_stealth","_roadPositions","_script_handler","_isIED","_isAS","_isSB","_spawnbehavior","_isRoadblocks","_objectives","_isCiv","_weatherChange",
-		 "_preciseMarkers","_reinforcement","_artillery","_civFaction","_playMusic","_animals","_markerName","_missionMaker","_campaignMission"];
+private ["_missionCenter","_missionCenterTrigger","_totalEnemyUnits","_isCQB","_objType","_objArray","_minObjectivesDistance","_maxObjectivesDistance","_objPos","_timeStart","_enemySide","_enemyfaction","_sidePlayer","_factionPlayer","_obj1","_obj2","_obj3","_pos","_center","_wholeMap","_armor","_vehicles","_stealth","_roadPositions","_script_handler","_isIED","_isAS","_isSB","_spawnbehavior","_isRoadblocks","_objectives","_isCiv","_weatherChange","_preciseMarkers","_reinforcement","_artillery","_civFaction","_playMusic","_animals","_markerName","_missionMaker","_campaignMission"];
 
 private ["_arrayGeneral","_arraySides","_arrayObjectives","_arrayDefines","_arrayAssets"];
 _arrayGeneral		= _this select 0;
@@ -236,7 +233,7 @@ if (!_campaignMission) then {
 };
 
 _objectives = [];
-_objFirstTime = true;
+
 //---------------------------------------------------------------------------Let's build objectives-------------------------------------------------------------------------
 for [{_x = 1},{_x <=3},{_x = _x+1}] do {
 	_objType = call compile format ["_obj%1",_x];
@@ -246,12 +243,12 @@ for [{_x = 1},{_x <=3},{_x = _x+1}] do {
 		_objPos = nil;
 		_timeStart = time;
 		while {isnil "_objPos" && (time < _timeStart +5)} do {
-			_objPos = [_missionCenterTrigger,_isCQB,_minObjectivesDistance,_maxObjectivesDistance,_objFirstTime] call MCC_fnc_MWfindObjectivePos;
+			_objPos = [_missionCenterTrigger,_isCQB,_minObjectivesDistance] call MCC_fnc_MWfindObjectivePos;
 			sleep 0.1;
 		};
 		if (isnil "_objPos") then {
 			_isCQB = false;
-			_objPos = [_missionCenter,_isCQB,0,1500,_objFirstTime] call MCC_fnc_MWfindObjectivePos;
+			_objPos = [_missionCenter,_isCQB,0] call MCC_fnc_MWfindObjectivePos;
 		};
 
 		if (isnil "_objPos") exitWith {
@@ -259,9 +256,6 @@ for [{_x = 1},{_x <=3},{_x = _x+1}] do {
 			diag_log "MCC: Mission Wizard Error: Can't find good objective's position try again";
 			MCC_MWisGenerating = false;
 		};
-
-		//Not the first objective we can get away from the center
-		_objFirstTime = false;
 
 		if (["Destroy", _objType] call BIS_fnc_inString) then {
 			[[_objPos, _isCQB, _enemySide, _enemyfaction,_preciseMarkers,_objType,_campaignMission,_sidePlayer], "MCC_fnc_MWObjectiveDestroy", false, false] call BIS_fnc_MP;
@@ -396,7 +390,7 @@ for [{_x = 1},{_x <=3},{_x = _x+1}] do {
 				};
 			};
 		};
-		_objectives set [count _objectives, MCC_MWObjectivesNames];
+		_objectives pushBack MCC_MWObjectivesNames;
 	};
 };
 
@@ -548,19 +542,27 @@ _sounds set [count _sounds, _missionName2 select 1];
 _factionName = getText (configfile >> "CfgFactionClasses" >> _enemyfaction >> "displayName");
 
 //Location
-if ((_center select 1) != "") then
+switch (true) do
 {
-        _tempText = ["Attack On","The Battle For","Assault On","The Fight For"] call BIS_fnc_selectRandom;
+	case (_stealth):
+	{
+		 _html = format ["<t size='1.1' color='#a8e748' underline='true' align='center'>Black Ops: </t><t size='1.1' color='#a8e748' underline='true' align='center'>%1 %2.</t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0)];
+		_missionTittle = format ["<t size='1.1' color='#a8e748' underline='true' align='center'>Black Ops: </t><t size='1.1' color='#a8e748' underline='true' align='center'><marker name='%3'>%1 %2.</marker></t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0),_markerName];
+	};
+
+	case ((_center select 1) != ""):
+	{
+		 _tempText = ["Attack On","The Battle For","Assault On","The Fight For"] call BIS_fnc_selectRandom;
         _html = format ["<t size='1.1' color='#a8e748' underline='true' align='center' >Operation: </t><t size='1.1' color='#a8e748' underline='true' align='center'>%1 %2. %3 %4</t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0),_tempText,(_center select 1)];
 		_missionTittle = format ["<t size='1.1' color='#a8e748' underline='true' align='center' >Operation: </t><t size='1.1' color='#a8e748' underline='true' align='center'><marker name='%5'>%1 %2. %3 %4</marker></t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0),_tempText,(_center select 1),_markerName];
-}
-else
-{
-        _html = format ["<t size='1.1' color='#a8e748' underline='true' align='center'>Operation: </t><t size='1.1' color='#a8e748' underline='true' align='center'>%1 %2.</t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0)];
+	};
+
+	default
+	{
+		 _html = format ["<t size='1.1' color='#a8e748' underline='true' align='center'>Operation: </t><t size='1.1' color='#a8e748' underline='true' align='center'>%1 %2.</t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0)];
 		_missionTittle = format ["<t size='1.1' color='#a8e748' underline='true' align='center'>Operation: </t><t size='1.1' color='#a8e748' underline='true' align='center'><marker name='%3'>%1 %2.</marker></t>",toupper (_missionName1 select 0),toupper (_missionName2 select 0),_markerName];
+	};
 };
-
-
 
 //General
 _tempText = [
@@ -664,10 +666,12 @@ _sounds set [count _sounds, ["isMissiongo",6.2]];
 if (_playMusic in [0,1] ) then {
 	[[_html2, ((_missionName1 select 0) +" " + (_missionName2  select 0)), _missionTittle, [_missionCenter,_objectives,1,_html,_sounds], _sidePlayer],"MCC_fnc_makeBriefing",false,false] spawn BIS_fnc_MP;
 
+	/*
 	//Publish the name
 	missionnamespace setvariable ["bis_fnc_moduleMissionName_name",((_missionName1  select 0)+" " + (_missionName2  select 0))];
 	publicvariable "bis_fnc_moduleMissionName_name";
 	[true,"bis_fnc_moduleMissionName"] call bis_fnc_mp;
+	*/
 };
 
 if (_playMusic == 0 ) then {

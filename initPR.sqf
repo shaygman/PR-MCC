@@ -27,9 +27,6 @@ missionNamespace setVariable ["MCC_allowSQLRallyPoint",true];
 missionNameSpace setVariable ["MCC_medicXPmesseges",true];
 missionNameSpace setVariable ["MCC_medicPunishTK",true];
 
-//Rspawn
-missionNameSpace setVariable ["MCC_respawnOnGroupLeader",(paramsArray select 4) ==1];
-
 //Radio
 if ((paramsArray select 2) ==1) then {
 	missionNameSpace setVariable ["MCC_VonRadio",true];
@@ -126,13 +123,13 @@ if (isServer || isDedicated) then {
 			//east
 		    case 1: {
 		    	[_side2] spawn MCC_fnc_aas_AIControl;
-		    	[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], position hq_side2] spawn MCC_fnc_aas_AIspawn;
+		    	[_side2, _side1, true, 15, true, "OPF_T_F",300,["at","ar","corpsman","rifleman"], position hq_side2] spawn MCC_fnc_aas_AIspawn;
 		    };
 
 		    //west
 		    case 2: {
 		    	[_side1] spawn MCC_fnc_aas_AIControl;
-		    	[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"], position hq_side1] spawn MCC_fnc_aas_AIspawn;
+		    	[_side1, _side2, true, 15, true, "BLU_T_F",300,["at","ar","corpsman","rifleman"], position hq_side1] spawn MCC_fnc_aas_AIspawn;
 		    };
 
 		    //both
@@ -140,8 +137,8 @@ if (isServer || isDedicated) then {
 		    	{[_x] spawn MCC_fnc_aas_AIControl} foreach [_side1,_side2];
 
 				//Start AI spawn
-				[_side1, _side2, true, 15, true, "BLU_F",300,["at","ar","corpsman","rifleman"],position hq_side1] spawn MCC_fnc_aas_AIspawn;
-				[_side2, _side1, true, 15, true, "OPF_F",300,["at","ar","corpsman","rifleman"], position hq_side2] spawn MCC_fnc_aas_AIspawn;
+				[_side1, _side2, true, 15, true, "BLU_T_F",300,["at","ar","corpsman","rifleman"],position hq_side1] spawn MCC_fnc_aas_AIspawn;
+				[_side2, _side1, true, 15, true, "OPF_T_F",300,["at","ar","corpsman","rifleman"], position hq_side2] spawn MCC_fnc_aas_AIspawn;
 		    };
 		};
 
